@@ -1,0 +1,42 @@
+[
+  {
+    "source": "trial/v0.1.0-dev.2/assets/image-20260909123106601.png",
+    "copy": "website/public/images/installation/image-20260909123106601.png",
+    "sha256": "2a7ab49bdc163b29d9931cb407a949a695429c155e25ac65b7e2667d3bab8d7f",
+    "version": "0.1.0-dev.2",
+    "date": "2026-09-09",
+    "edited": false
+  },
+  {
+    "source": "trial/v0.1.0-dev.2/assets/image-20260909123140890.png",
+    "copy": "website/public/images/installation/image-20260909123140890.png",
+    "sha256": "87c567ab113cb7487f5abe17ea399e7ab4c05852442a0c273f27ccd895ed3fe8",
+    "version": "0.1.0-dev.2",
+    "date": "2026-09-09",
+    "edited": false
+  },
+  {
+    "source": "trial/v0.1.0-dev.2/assets/image-20260909123218913.png",
+    "copy": "website/public/images/installation/image-20260909123218913.png",
+    "sha256": "195612f81f929989b74bfbd3cc20b8df4698a33b436fe4d9d2301a8bbaced061",
+    "version": "0.1.0-dev.2",
+    "date": "2026-09-09",
+    "edited": false
+  },
+  {
+    "source": "trial/v0.1.0-dev.2/assets/image-20260909123308407.png",
+    "copy": "website/public/images/installation/image-20260909123308407.png",
+    "sha256": "e7c199fb011a56aac42d8c7f0dd3c52a6c8f2f3252c3910b50b00b2fca25b647",
+    "version": "0.1.0-dev.2",
+    "date": "2026-09-09",
+    "edited": false
+  },
+  {
+    "source": "trial/v0.1.0-dev.2/assets/image-20260909123314813.png",
+    "copy": "website/public/images/installation/image-20260909123314813.png",
+    "sha256": "2a3e5c3e47fde2cb05300fd47b6ad6e5e817a300f07a715c2a060a3e5f9d9a58",
+    "version": "0.1.0-dev.2",
+    "date": "2026-09-09",
+    "edited": false
+  }
+]

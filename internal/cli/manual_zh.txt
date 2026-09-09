@@ -1,0 +1,189 @@
+myEnv 离线使用手册（开发版）
+
+入门与适用范围
+日常流程是 init → sync → run；用 use 修改版本，用 doctor 排查问题。
+直接运行 myenv 或 myenv status 查看当前项目状态。
+当前支持已验证的 Windows amd64 与原生 Linux amd64/glibc；不支持 WSL。
+Windows 需要 Windows 10/Server 2016 或更新版本，以便创建进程时关联 Job；
+这不是所有系统版本均已测试的承诺。Linux TTY 需要允许 pidfd 系统调用，通常为 Linux 5.3 及以上。
+Windows 和原生 Linux 已完成运行时功能验证；性能验收仍有开放项，本次不支持 macOS。
+
+语言与输出
+--lang auto|zh-CN|en 选择帮助和提示语言，也可设置 MYENV_LANG。
+优先级：命令行参数 > MYENV_LANG > 系统语言 > 英文回退。
+中文系统在 auto 模式使用简体中文，其他系统暂用英文。
+POSIX 按 LC_ALL、LC_MESSAGES、LANG 顺序识别，C/POSIX 使用英文。
+Windows 按当前用户的系统界面语言识别，不修改系统代码页或 Shell 配置。
+myEnv 自身中文输出使用 UTF-8；旧终端显示异常时可用 --lang en 回退。
+命令名、参数名、路径、版本、错误码保持原样；第三方工具和用户程序输出不翻译。
+--json 输出的字段、枚举及现有英文消息不随显示语言变化。诊断写入 stderr。
+JSON 包含 schema、ok、changed、data、error；错误含 code、message、next_action。
+--json 不适用于 run、help、completion、shell-init。后两者生成可执行 Shell 代码。
+--verbose 输出技术细节，保留英文键值及原始错误。普通文本错误提供中文摘要和处理建议，
+未分类的底层错误保留原文，不隐藏导致失败的细节。
+
+配置项目
+在项目中创建 myenv.yaml：
+  schema: 1
+  tools:
+    node: "22"
+    python: "3.12"
+只需要哪种工具就声明哪种。版本必须使用字符串。
+已有 .node-version、.nvmrc、.python-version、package.json 或 pyproject.toml 时，
+可用 myenv init 检测声明。它不会覆盖已有 myenv.yaml，也不会安装工具。
+缺少或冲突的声明在非交互模式下报错；终端可以询问工具与版本。
+用 -C <目录> 指定项目上下文。可选 python.project 是工作区内相对路径，
+python.groups 选择依赖组。env 仅保存普通字符串；凭据通过调用进程环境传入。
+Windows 环境变量名不区分大小写，不能同时声明 Path 和 PATH 等冲突键。
+Python 原生项目元数据和依赖仍写在 pyproject.toml，使用 uv.lock 锁定。
+
+同步与依赖
+myenv sync 准备新环境，验证成功后才切换活动引用。run 不隐式下载或安装。
+sync --dry-run 预览，不安装后端、不改锁或环境；未解析 Python 选择器在实际同步时解析。
+Python 使用固定版本的受管 uv，在新环境最终位置创建 venv。
+有效项目/工作区根目录的 uv.toml 或 tool.uv 生效，不合并无关祖先、用户或系统 uv 配置。
+工作区成员使用工作区根目录的共享 uv.lock，该根必须位于 myEnv 工作区内。
+临时配置快照放在项目旁以保留相对路径语义，调用后移除。
+只选择声明的 python.groups，不自动添加默认组。输入摘要包括受支持的原生配置。
+复杂工作区输入追踪与完整构建来源覆盖仍在完善。
+Python 构建代码需要 --allow-build 或本次终端确认，以当前用户权限运行，不提供沙箱。
+Node 的 npm 业务依赖不由 myEnv 自动同步；可显式使用 myenv run npm install。
+首次同步需联网；已完整准备且声明/锁未变的环境可复用。并非所有新项目均能离线安装。
+
+版本与锁文件
+主版本/次版本选择对应稳定系列；数值比较支持 >=、>、<=、<、!=、==，
+逗号或空格连接条件，|| 表示并集；Node 支持 ^、~ 和连字符范围，Python 支持 ~=。
+预发布版本须显式选择完整名称；Rust 另支持 beta/nightly 及日期渠道。无效选择器在写入前失败。
+init 对多个声明取交集；冲突需修正。
+sync --locked 要求 myenv.lock 与 Python 原生锁匹配，不更新任一锁文件。
+sync --update node 或 python 刷新指定运行时解析，不能与 --locked 同用。
+Node 锁含制品摘要证据，Python 运行时锁主要是版本证据，不应混为同等强度。
+pyproject.toml、uv.lock、uv.toml 等受支持输入变化后应重新同步。
+
+失败与回滚
+sync/use 准备失败保留旧活动环境；声明或期望锁文件可能已改变。
+使用 myenv run --current <command> 明确运行旧环境。
+myenv rollback 切换到完整的上一环境，不回退声明、锁文件、业务代码或数据。
+需要重新按当前锁构建时使用 myenv sync --rebuild --locked。
+重建不会重装共享基础解释器，也不清空共享缓存。
+
+运行、参数与退出码
+myenv run node hello.js "hello world" 中文
+myenv run python hello.py
+受管 node/python/npm/npx 使用已应用环境入口；其他命令从其 PATH 查找。
+也接受绝对路径或相对于调用目录的可执行文件路径。
+用户命令后的参数保留，包含 --lang、--json。myEnv 选项应放在命令之前。
+Windows 托管 Rust 在未配置链接器时使用同一归档自带的 LLD：rustc 增加 -C linker，
+Cargo 设置目标链接器环境变量。显式链接器配置优先；--rust-linker=system 关闭此调整。
+这避免 MSVC 的 vctip 辅助进程使监督等待无法结束，不放宽后代退出确认。
+run 不解释管道或重定向；需要时显式使用 Shell。
+子进程启动后保留其退出码；自行处理信号后正常退出的程序也保留其选择的退出码。
+Linux 信号终止返回 128 + 信号编号，例如 SIGINT=130、SIGQUIT=131、SIGTERM=143；
+Windows 保留原生进程退出状态。启动前失败使用 myEnv 错误类别。
+myEnv 成功为 0，执行/环境错误为 1，用法/配置错误为 2，需要输入为 3；取消通常为 130。
+--no-input、--json、CI 或重定向的非交互场景不等待输入；交互中输入结束或空值可取消。
+
+监督与删除保护
+Linux 独立监督器转发 INT/TERM/HUP/QUIT/CONT，并等待受监督后代回收。
+Ctrl-Z 与 Shell fg/bg 已有原生 Linux Bash/PTY 验证；Bash、zsh、fish 默认工具接入也已验证。
+调用者暂停后无法执行自身 Go 取消回调，恢复后才能执行；绝对截止时间仍由独立监督器执行。
+不能确认子树完成时，环境继续受 clean 保护。运行保护记录收尾错误写入 stderr，
+不会覆盖已完成用户命令的退出码。Windows 使用 Job 管理后代，保持现有退出语义。
+
+检查与清理
+myenv doctor 只读检查配置、入口和 PATH；myenv doctor --deep 比较环境代内容基线。
+深度检查包括受管代的文件与链接目标，不含 Python 字节码缓存、外部运行时和 ACL。
+没有基线、内容不一致或检查期间环境切换会明确报告，不自动修复。
+普通 doctor/status/run 使用快速检查，不扫描所有文件内容。
+doctor 的 JSON data.run_protection 为 present 或 none；present 不证明进程仍活着。
+此项不统计准备操作的全部保护记录，也不主动回收。未知记录不能手工删除来绕过保护。
+myenv clean --dry-run 预览可清理项目环境及逻辑字节数；myenv clean 持锁复查后清理。
+保留当前、上一代、仍受租约或准备操作保护的环境；有明确子进程完成证据的中断准备可恢复。
+Windows 恢复还需确认对应监督者和 Job 退出；未知及旧式记录继续保留。
+--json 返回候选项、汇总及可能的部分失败。clean 不接受 --global。
+clean --cache node --dry-run 预览共享 Node 下载缓存；clean --cache uv 使用已安装的固定 uv，
+不使用 --force，不卸载共享 Python 解释器。
+
+当前用户默认环境与 Shell 接入
+myenv use --global python@3.12
+myenv run --global python --version
+myenv doctor --global
+sync/run/doctor/rollback 也接受 --global。它属于当前用户，不是管理员或系统级安装。
+profile 位于系统用户配置目录下 myenv/profile.yaml，只接受 schema/tools。
+状态位于同级 .myenv-profile 和 profile.lock；项目不会隐式继承 profile，run 保留调用目录。
+有 profile 后，可显式在当前 Shell 启用包装函数：
+  PowerShell: myenv shell-init powershell | Out-String | Invoke-Expression
+  Bash: eval "$(myenv shell-init bash)"
+  Zsh: eval "$(myenv shell-init zsh)"
+  Fish: myenv shell-init fish | source
+这些函数通过 myEnv 绝对路径调用 run --global，优先于 PATH 同名命令。
+不会修改 PATH 或 Shell 配置文件，关闭 Shell 即可丢弃；添加工具或移动 myEnv 后需重新生成。
+移除 profile 工具不会删除旧包装函数，应打开新 Shell；被覆盖的同名函数不会自动恢复。
+子程序直接查找工具时仍使用其自身 PATH，不使用这些 Shell 函数。
+
+补全（可选）
+  PowerShell: myenv completion powershell | Out-String | Invoke-Expression
+  Bash: source <(myenv completion bash)
+  Fish: myenv completion fish > ~/.config/fish/completions/myenv.fish
+  Zsh: 将 myenv completion zsh 的输出保存为 fpath 中的 _myenv，
+       然后执行 autoload -Uz compinit; compinit。
+命令只生成脚本，不自动修改配置；请在目标目录存在时显式保存。
+
+代理、镜像与证书
+后端继承普通调用环境，包括 HTTPS_PROXY。受管 uv 会移除继承的 UV_* 设置，
+因此 UV_* 不是托管项目安装的配置入口；system external 则使用用户原管理器的设置。
+MYENV_NODE_MIRROR 指定 HTTP(S) Node 下载基址，需保持官方 index.json、版本目录和
+SHASUMS256.txt 布局。新解析的来源和摘要写入锁，已有锁定 URL 不变；摘要不是签名。
+MYENV_UV_MIRROR 指定 <版本>/<官方归档名> 的下载基址，内置 uv 版本和 SHA-256 不变。
+MYENV_PYTHON_MIRROR 传给 uv python install --mirror，保持 python-build-standalone 发布布局。
+已有 uv 和共享解释器继续复用。Python 镜像不将版本锁升级为制品摘要锁。
+镜像基址不接受凭据、查询参数或片段；取消变量后使用默认来源。
+SSL_CERT_FILE 指定绝对路径 PEM 证书；Node/uv 引擎下载接受不超过 4 MiB 的普通文件，
+以提供证书替换默认信任根。无效或空证书报错，不关闭 TLS 校验，不修改系统证书库。
+uv 子进程继承该变量；myEnv 下载器尚不支持 SSL_CERT_DIR。
+
+安装、存储与卸载
+Windows 安装向导可将 myenv.exe 安装到当前用户目录，并显式加入用户 PATH。
+安装后重新打开终端，用 myenv --version 检查。便携版可始终按绝对路径调用。
+手动安装时先用 Get-Command myenv -All（PowerShell）或 command -v myenv（POSIX）检查冲突。
+把可执行文件所在目录加入 PATH，不是把 exe 文件本身加入 PATH。
+源码构建：go build -o dist/myenv ./cmd/myenv；Windows 输出用 dist/myenv.exe。
+共享 Python/uv 位于用户 myenv 数据目录，Windows 使用 LOCALAPPDATA，
+Linux 使用 XDG_DATA_HOME 或 ~/.local/share；缓存使用系统用户缓存目录下的 myenv。
+Node 下载按 SHA-256 共享缓存，每次准备复制到操作目录。项目环境代位于 .myenv/generations。
+无变更同步不会迁移已有环境路径。
+卸载命令本身保留项目配置、锁文件、环境代和共享数据；不要随意删除共享解释器，
+已有 venv 可能引用它们。目前不提供完整的自动数据卸载。
+
+命令参考
+
+SDK、来源与系统环境（dev.3）
+支持 Node、Python、Java（Temurin JDK）、Go、Rust。
+myenv versions java --major 21 --search 21 查询官方版本；--preview 包含预览记录。
+myenv use python@3.14 --provider python.org 使用官网完整 Windows x64 运行时 ZIP。
+myenv use python@3.14 --provider astral 使用固定 uv 的 Astral 构建目录。
+来源保存在 tools.python 中，例如 python.org/3.14，不会在同步时悄悄替换来源。
+Linux 不提供本后端支持的 python.org 二进制，选择官网来源会明确报错而非改用 Astral。
+Python 预览版使用完整版本（例如 3.15.0rc2）；稳定版本范围不自动选预览版。
+Rust 支持 beta、nightly 和带 YYYY-MM-DD 日期的渠道，锁文件保存实际日期、版本和摘要。
+myenv versions rust --channel nightly --date YYYY-MM-DD 查询指定日期；官网缺包则报错。
+Node --preview 列 nightly、rc、v8-canary 官方目录，安装须复制完整版本名。
+Temurin 日期命名 EA 版本与 Go beta/rc 也要求显式版本。
+
+myenv system list 列出支持的已安装运行时，--path 可补充自定义位置。
+myenv system doctor 另检查编译器入口、MSVC 登记及 Windows SDK 库；存在不等于编译已验证。
+C/C++ 本轮只检测并提供官方指引，不自动安装。
+myenv system install python@3.14 --provider python.org 安装至 myenv 当前用户默认环境。
+system upgrade 遵守声明范围；repair 重建整个默认环境；remove 从活动默认环境移除工具。
+system clean --dry-run 使用原有引用与运行保护清理历史代，不保证 remove 立即回收全部文件。
+通过 myenv run --global python 等使用默认环境；system 不是管理员级整机安装。
+
+外部原管理器操作
+myenv system external <列表中的ID> --manager <原管理器绝对路径> --action repair --dry-run
+默认仅生成计划，核对目标和参数后加 --apply 执行，原管理器输出原样保留。
+uv 支持修复/移除及其预览补丁升级；rustup 支持更新/移除；Conda 支持非 base 环境的
+Python 更新/重装与整个环境移除。每次核实管理器身份及安装成员关系，不按猜测目录删除。
+Conda base、未知安装器、无可靠原生重装入口的 rustup repair 会明确拒绝。
+外部操作不属于 myenv 环境代回滚；关闭使用该环境的程序后再执行。
+Conda 移除会删除整个环境及包，不只删除 Python。myenv 不会因此安装 Anaconda。
+系统未知路径不做全盘扫描；Windows 应用执行别名不当成可用 Python。
