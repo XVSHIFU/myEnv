@@ -2,7 +2,13 @@ import { sites } from '@openai/sites-vite-plugin';
 import tailwindcss from '@tailwindcss/postcss';
 import vinext from 'vinext';
 import { defineConfig } from 'vite';
-import hostingConfig from './.openai/hosting.json';
+import { existsSync, readFileSync } from 'node:fs';
+
+// GitHub Pages does not require private local hosting metadata.
+const hostingPath = new URL('./.openai/hosting.json', import.meta.url);
+const hostingConfig: { d1?: string; r2?: string } = existsSync(hostingPath)
+  ? JSON.parse(readFileSync(hostingPath, 'utf8'))
+  : {};
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
   '00000000-0000-4000-8000-000000000000';

@@ -1,5 +1,7 @@
 # myEnv
 
+[中文使用文档](https://xvshifu.github.io/myEnv/) · [发行包](https://github.com/XVSHIFU/myEnv/releases) · [性能差距](docs/performance-gap.md)
+
 myEnv 用声明文件管理项目与当前用户默认的 Node/Python/Java JDK/Go/Rust 开发环境。日常流程是 `init → sync → run`；`sync` 准备新环境代，成功后切换活动引用，失败时保留原环境。`run` 使用已应用环境，不隐式下载或安装。
 
 当前为开发版本，性能验收仍有未达标项。Windows amd64 与原生 Linux amd64/glibc（Kali VMware）已完成真实 Node/Python、混合项目、镜像和失败恢复验证；PowerShell、Bash、zsh、fish 接入已有实际运行证据。按用户要求，本次交付跳过 macOS；产品仍拒绝 WSL。Windows 与 Kali 的部分延迟超过原预算，不能将功能验证通过等同于性能达标。详细证据和开放项见 [实现记录](docs/implementation.md)，目标行为见 [架构方案](docs/architecture.md)。

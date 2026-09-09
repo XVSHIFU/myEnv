@@ -5,8 +5,8 @@
 ## 正式版待完成
 
 1. 性能：Windows 启动/status/run、Kali run 与聚合 myenv RSS 的原门槛仍开放。历史证据见 kali-validation.md、run-stage-evaluation.md、localization-delivery.md。此轮未改运行路径，不重跑挑样，不降低门槛。
-2. 文档站：仍为 dev.2 内容，正式上线前需同步 SDK、系统管理和终端行为，完成站点已有依赖审计开放项。保留用户安装演示图片。
-3. 发布身份：当前目录不是 Git 仓库，尚无目标 GitHub 仓库与发布地址；未做提交、推送、标签或网站部署。源码开放前还需用户确定许可证，当前根目录没有项目 LICENSE，不能擅自授予第三方许可。
+2. 文档站：已同步 rc.1 SDK、系统管理、Python 来源和终端行为，保留 dev.2 安装原图及版本标注。本地构建、TypeScript 与 262 个内部引用校验通过；站点已有依赖审计开放项仍保留。
+3. 发布身份：用户已创建并授权推送 https://github.com/XVSHIFU/myEnv ，已完成 main 首次推送并启动 Pages 部署。未创建正式版标签或上传发行包；项目尚未选择开源许可证，不能默认授予开源许可。
 4. 最新显示层：Windows 彩色列表及单元/CLI 回归通过；Linux 原生动画与下载/Ctrl-C 视觉验收待补。既有平台 SDK 与可靠性证据按未修改范围复用。
 
 ## 候选整理范围

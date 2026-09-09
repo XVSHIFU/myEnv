@@ -1,5 +1,7 @@
 目标：按 [architecture.md](architecture.md) 完成 myEnv CLI 首版 T00–T06。状态：in_progress，2026-09-09。用户明确要求跳过 macOS，并授权通过 SSH 使用 Kali VMware 虚拟机开展原生 Linux 验证；macOS 实现、签名与原生验收不再阻塞本次交付。Windows/Linux 的既定预算仍保留。
 
+2026-09-09 GitHub 与文档更新：按用户授权初始化仓库并推送 XVSHIFU/myEnv main，配置 GitHub Pages workflow。文档同步 rc.1 工具链/来源/系统管理/预览版/颜色进度，保留用户安装原图。Sites 构建脚本因 Windows npm 入口解析失败，改用现有 npm 绝对入口构建 /myEnv 前缀，11 页、262 内部引用、tsc 通过。缓存、trial、dist、站点宿主元数据未入库；暂存内容凭据模式扫描无匹配。性能差距汇总见 performance-gap.md，未重测或宣称当前 RC 达标。
+
 2026-09-09 发布整理：用户 dev.5 试用反馈正常；将当前源码构建为本地 0.1.0-rc.1（Windows/Linux amd64），打包 Windows setup/portable，更新根 README、新增 CHANGELOG 与 release-readiness 检查单。Windows --version 通过，安装器内嵌 CLI SHA256 与独立制品一致，dist/0.1.0-rc.1 提供全套摘要。源码仅文档变化，复用 dev.5 定向回归，不重复全量测试。Linux 此候选仅交叉构建，未补原生验收。正式发布仍受原性能门槛、旧文档站、缺少 GitHub 目标与源码许可证选择阻塞；未公开发布、未创建仓库或修改旧试用记录。
 
 2026-09-09 dev.5 显示层：依据用户 dev.4 测试通过反馈，添加 TTY 自动颜色和单行阶段动画，复用 x/term 与 x/sys，无新依赖。NO_COLOR/TERM=dumb 禁用装饰，JSON/no-input/verbose 不启用动画；run 不包装子程序输出。CLI System/Run/Locale/Language/Help/InventoryOutput/Sync/Use/Cancel 定向测试及 Progress 测试、go vet 通过；Windows PTY 已观察到 ANSI 彩色列表。制品 trial/v0.1.0-dev.5；原试用记录未修改。真实下载时动画与 Ctrl-C 视觉验收待试用，Linux 原生未重测，性能预算不变。
