@@ -1,7 +1,7 @@
 myEnv — third-party copyright and license notices
 
 This file reproduces notices from installed upstream source used by the selected production builds.
-Each component remains under its own license. No license for the original myEnv project is granted or selected by this file.
+Each component remains under its own license. The original myEnv project is distributed under MIT; see the accompanying LICENSE file.
 The Windows GUI uses the system-installed WebView2 Runtime; that runtime is not redistributed in these packages.
 Additional notices distributed by an upstream component are retained even when they cover code outside the selected build.
 Generated offline by scripts/generate-third-party-notices.ps1; source file hashes are listed in third-party-manifest.json.

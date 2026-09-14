@@ -56,6 +56,7 @@ sealed class MemorySettings : ISettings {
 
 static class Install {
     const string Marker = "myenv-install.txt";
+    static readonly string[] Files = { "myenv.exe", "myenv-setup.exe", "LICENSE", "THIRD_PARTY_NOTICES.txt" };
     static readonly StringComparer Paths = StringComparer.OrdinalIgnoreCase;
     public static string Normalize(string path) {
         return Path.GetFullPath(Environment.ExpandEnvironmentVariables(path.Trim().Trim('"'))).TrimEnd(Path.DirectorySeparatorChar);
@@ -95,11 +96,11 @@ static class Install {
         string path = Path.Combine(root, Marker);
         if (!File.Exists(path) || (File.GetAttributes(path)&FileAttributes.ReparsePoint)!=0) throw new IOException("目录中没有有效 myEnv 安装记录；不会覆盖或删除不明文件。");
         var lines = File.ReadAllLines(path, Encoding.UTF8);
-        if (lines.Length != 5 || lines[0] != "myEnv-user-install-v1" || !Same(lines[1], root) || (lines[2] != "yes" && lines[2] != "no"))
+        bool legacy = lines.Length == 5 && lines[0] == "myEnv-user-install-v1";
+        if ((!legacy && (lines.Length != 7 || lines[0] != "myEnv-user-install-v2")) || !Same(lines[1], root) || (lines[2] != "yes" && lines[2] != "no"))
             throw new IOException("myEnv 安装记录无效。");
-        var names = new [] { "myenv.exe", "myenv-setup.exe" };
-        for (int i = 0; i < names.Length; i++) {
-            string file = Path.Combine(root, names[i]);
+        for (int i = 0; i < (legacy ? 2 : Files.Length); i++) {
+            string file = Path.Combine(root, Files[i]);
             if (!File.Exists(file) || (File.GetAttributes(file) & FileAttributes.ReparsePoint) != 0 || Digest(File.ReadAllBytes(file)) != lines[i+3])
                 throw new IOException("已安装文件缺失或被修改，请保留现场后手动检查：" + file);
         }
@@ -118,15 +119,25 @@ static class Install {
         }
         return found;
     }
-    public static void Apply(string path, bool addPath, ISettings settings, byte[] cli, byte[] setup) {
+    public static void Apply(string path, bool addPath, ISettings settings, byte[] cli, byte[] setup, byte[] license, byte[] notices) {
         string root = Validate(path);
         if (!String.IsNullOrEmpty(settings.Location) && !Same(settings.Location,root)) throw new IOException("已在其他目录安装，请先卸载原安装："+settings.Location);
         string[] previous = null;
         if (Directory.Exists(root) && Directory.EnumerateFileSystemEntries(root).Any()) previous = Owned(root);
+        // Legacy installers did not own adjacent license files. Do not adopt or
+        // overwrite a user-created file simply because its name matches ours.
+        if (previous != null && previous[0] == "myEnv-user-install-v1") {
+            foreach (string name in Files.Skip(2)) {
+                string file = Path.Combine(root, name);
+                if (File.Exists(file) || Directory.Exists(file)) throw new IOException("旧安装中已有同名许可文件，请先移到其他位置后重试：" + file);
+            }
+        }
         // Never overwrite a second process's installation/update/uninstall.
         Directory.CreateDirectory(root);
         string exe = Path.Combine(root,"myenv.exe"), helper=Path.Combine(root,"myenv-setup.exe"), marker=Path.Combine(root,Marker);
+        string licensePath=Path.Combine(root,"LICENSE"), noticePath=Path.Combine(root,"THIRD_PARTY_NOTICES.txt");
         byte[] oldExe=ReadOptional(exe), oldHelper=ReadOptional(helper), oldMarker=ReadOptional(marker);
+        byte[] oldLicense=ReadOptional(licensePath), oldNotices=ReadOptional(noticePath);
         string oldPath=settings.UserPath, oldLocation=settings.Location;
         bool ownedPath = (previous != null && previous[2] == "yes") || (addPath && !ContainsPath(oldPath,root));
         string updated = addPath ? AddPath(oldPath,root) : oldPath;
@@ -135,13 +146,15 @@ static class Install {
             // until the complete local transaction succeeds; installers are low frequency.
             WriteAtomic(exe,cli);
             WriteAtomic(helper,setup);
-            WriteAtomic(marker,Encoding.UTF8.GetBytes(String.Join("\n",new [] {"myEnv-user-install-v1",root,ownedPath?"yes":"no",Digest(cli),Digest(setup)})+"\n"));
+            WriteAtomic(licensePath,license);
+            WriteAtomic(noticePath,notices);
+            WriteAtomic(marker,Encoding.UTF8.GetBytes(String.Join("\n",new [] {"myEnv-user-install-v2",root,ownedPath?"yes":"no",Digest(cli),Digest(setup),Digest(license),Digest(notices)})+"\n"));
             if (settings.UserPath != oldPath) throw new IOException("安装期间用户 PATH 已改变，请重试。");
             if (updated != oldPath) settings.UserPath=updated;
             settings.Location=root;
         } catch (Exception original) {
             var failures=new List<string>();
-            try { Restore(exe,oldExe); Restore(helper,oldHelper); Restore(marker,oldMarker); } catch(Exception e) {failures.Add(e.Message);}
+            try { Restore(exe,oldExe); Restore(helper,oldHelper); Restore(licensePath,oldLicense); Restore(noticePath,oldNotices); Restore(marker,oldMarker); } catch(Exception e) {failures.Add(e.Message);}
             try { if (settings.UserPath == updated && updated != oldPath) settings.UserPath=oldPath; settings.Location=oldLocation; } catch(Exception e) {failures.Add(e.Message);}
             throw new IOException(original.Message+(failures.Count==0?"\n此前的安装和 PATH 已保留。":"\n回退未全部完成，请检查："+String.Join("；",failures.ToArray())), original);
         }
@@ -151,16 +164,21 @@ static class Install {
         if (!Same(settings.Location,root)) throw new IOException("卸载目录与当前用户的安装登记不一致。");
         string[] previous=Owned(root);
         string exe=Path.Combine(root,"myenv.exe"), helper=Path.Combine(root,"myenv-setup.exe"), marker=Path.Combine(root,Marker);
+        string licensePath=Path.Combine(root,"LICENSE"), noticePath=Path.Combine(root,"THIRD_PARTY_NOTICES.txt");
+        bool ownsLicenses=previous[0]=="myEnv-user-install-v2";
         byte[] oldExe=File.ReadAllBytes(exe),oldHelper=File.ReadAllBytes(helper),oldMarker=File.ReadAllBytes(marker);
+        byte[] oldLicense=ownsLicenses?File.ReadAllBytes(licensePath):null,oldNotices=ownsLicenses?File.ReadAllBytes(noticePath):null;
         string oldPath=settings.UserPath;
         string updated=previous[2]=="yes" ? RemovePath(oldPath,root) : oldPath;
         try {
             File.Delete(exe); File.Delete(helper); File.Delete(marker);
+            if (ownsLicenses) { File.Delete(licensePath); File.Delete(noticePath); }
             if (settings.UserPath!=oldPath) throw new IOException("卸载期间 PATH 已改变，请重试。");
             if (updated!=oldPath) settings.UserPath=updated;
             settings.Location="";
         } catch {
             Restore(exe,oldExe); Restore(helper,oldHelper); Restore(marker,oldMarker);
+            if (ownsLicenses) { Restore(licensePath,oldLicense); Restore(noticePath,oldNotices); }
             if (settings.UserPath==updated && updated!=oldPath) settings.UserPath=oldPath;
             settings.Location=root;
             throw;
@@ -172,8 +190,11 @@ static class Install {
 
 static class Setup {
     public static string Version { get { using (var s=Assembly.GetExecutingAssembly().GetManifestResourceStream("version.txt")) using (var r=new StreamReader(s)) return r.ReadToEnd().Trim(); } }
-    static byte[] Payload() {
-        using (var s=Assembly.GetExecutingAssembly().GetManifestResourceStream("myenv.exe")) using(var m=new MemoryStream()) {s.CopyTo(m);return m.ToArray();}
+    static byte[] Payload(string name) {
+        using (var s=Assembly.GetExecutingAssembly().GetManifestResourceStream(name)) using(var m=new MemoryStream()) {
+            if(s==null) throw new IOException("安装包缺少文件："+name);
+            s.CopyTo(m);return m.ToArray();
+        }
     }
     [DllImport("user32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
     static extern IntPtr SendMessageTimeout(IntPtr h,uint msg,UIntPtr w,string text,uint flags,uint timeout,out UIntPtr result);
@@ -206,7 +227,7 @@ static class Setup {
                 form.Text="myEnv CLI 安装向导 · "+Version; form.ClientSize=new Size(640,365); form.StartPosition=FormStartPosition.CenterScreen;
                 form.Font=new Font("Microsoft YaHei UI",9F);
                 form.FormBorderStyle=FormBorderStyle.FixedDialog; form.MaximizeBox=false;
-                var intro=new Label {Left=24,Top=22,Width=590,Height=74,Text="安装后可直接输入 myenv，无需寻找 exe。\n仅安装到当前用户，不需要管理员权限。\n这是开发版；中文帮助已接入，性能验收仍有开放项。"};
+                var intro=new Label {Left=24,Top=22,Width=590,Height=74,Text="安装后可直接输入 myenv，无需寻找 exe。\n仅安装 CLI/TUI 到当前用户，不需要管理员权限。\nmyEnv 使用 MIT 许可证；第三方许可随安装一并提供。"};
                 var pathLabel=new Label{Left=24,Top=110,Width=570,Text="安装目录（建议保持默认，升级沿用原目录）："};
                 var path=new TextBox{Left=24,Top=139,Width=495,Text=String.IsNullOrEmpty(settings.Location)?Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Programs","myEnv"):settings.Location};
                 var browse=new Button{Left=530,Top=137,Width=82,Text="浏览…"};
@@ -226,7 +247,7 @@ static class Setup {
                         if(add.Checked && conflicts.Count>0) throw new IOException("发现同名命令，请先处理冲突，或取消加入 PATH 后使用绝对路径：\n"+String.Join("\n",conflicts.ToArray()));
                         using(var mutex=new Mutex(false,@"Local\myEnv.CLI.Install")) {
                             if(!mutex.WaitOne(0))throw new IOException("另一个 myEnv 安装操作正在进行。");
-                            try{Install.Apply(root,add.Checked,settings,Payload(),File.ReadAllBytes(Self));}finally{mutex.ReleaseMutex();}
+                            try{Install.Apply(root,add.Checked,settings,Payload("myenv.exe"),File.ReadAllBytes(Self),Payload("LICENSE"),Payload("THIRD_PARTY_NOTICES.txt"));}finally{mutex.ReleaseMutex();}
                         }
                         Notify();
                         MessageBox.Show(add.Checked?"安装完成。请重新打开终端，运行：\nmyenv --version\nmyenv --help\n\n若终端仍未识别命令，请退出终端应用后重开。":"安装完成（未添加 PATH）。\n请通过安装目录下的 myenv.exe 运行。","myEnv");
@@ -249,27 +270,30 @@ static class Setup {
             if(Directory.Exists(root))throw new IOException("Self-test requires a fresh directory.");
             Directory.CreateDirectory(root);
             var state=new MemorySettings{UserPath=@"%USERPROFILE%\bin;C:\unrelated"};
-            string app=Path.Combine(root,"中文 app");byte[] cli=Payload(), setup=File.ReadAllBytes(Self);
+            string app=Path.Combine(root,"中文 app");byte[] cli=Payload("myenv.exe"), setup=File.ReadAllBytes(Self), license=Payload("LICENSE"), notices=Payload("THIRD_PARTY_NOTICES.txt");
             Check(cli.Length>100000 && cli[0]=='M' && cli[1]=='Z',"payload");
-            Install.Apply(app,true,state,cli,setup);Check(Install.ContainsPath(state.UserPath,app),"PATH add");
+            Check(Encoding.UTF8.GetString(license).Contains("MIT License") && notices.Length>1000,"license resources");
+            Install.Apply(app,true,state,cli,setup,license,notices);Check(Install.ContainsPath(state.UserPath,app),"PATH add");
+            Check(Install.Digest(File.ReadAllBytes(Path.Combine(app,"LICENSE")))==Install.Digest(license) && Install.Digest(File.ReadAllBytes(Path.Combine(app,"THIRD_PARTY_NOTICES.txt")))==Install.Digest(notices),"installed license bytes");
             string once=state.UserPath;
-            Install.Apply(app,true,state,cli,setup);Check(state.UserPath==once,"idempotent upgrade");
+            Install.Apply(app,true,state,cli,setup,license,notices);Check(state.UserPath==once,"idempotent upgrade");
             state.UserPath+=@";C:\user-added";
             File.WriteAllText(Path.Combine(app,"keep.txt"),"user content");
             Install.Remove(app,state);
             Check(state.UserPath==@"%USERPROFILE%\bin;C:\unrelated;C:\user-added","preserve PATH");
             Check(File.Exists(Path.Combine(app,"keep.txt")) && !File.Exists(Path.Combine(app,"myenv.exe")),"preserve user files");
+            Check(!File.Exists(Path.Combine(app,"LICENSE")) && !File.Exists(Path.Combine(app,"THIRD_PARTY_NOTICES.txt")),"remove owned licenses");
             string pre=Path.Combine(root,"preexisting-path");state.UserPath=pre;
-            Install.Apply(pre,true,state,cli,setup);Install.Remove(pre,state);Check(state.UserPath==pre,"unowned PATH preserved");
+            Install.Apply(pre,true,state,cli,setup,license,notices);Install.Remove(pre,state);Check(state.UserPath==pre,"unowned PATH preserved");
             string collision=Path.Combine(root,"collision");Directory.CreateDirectory(collision);File.WriteAllText(Path.Combine(collision,"myenv.exe"),"unrelated");
-            bool refused=false;try{Install.Apply(collision,true,state,cli,setup);}catch(IOException){refused=true;}
+            bool refused=false;try{Install.Apply(collision,true,state,cli,setup,license,notices);}catch(IOException){refused=true;}
             Check(refused && File.ReadAllText(Path.Combine(collision,"myenv.exe"))=="unrelated","foreign file protection");
             Check(Install.Conflicts(collision,pre).Count==1,"conflict detection");
             Check(Install.RemovePath(pre+";"+pre,pre)==pre,"remove only one owned PATH entry");
             string rollback=Path.Combine(root,"rollback");string originalPath=state.UserPath;state.FailNextRegistration=true;
-            refused=false;try{Install.Apply(rollback,true,state,cli,setup);}catch(IOException){refused=true;}
-            Check(refused && state.UserPath==originalPath && state.Location=="" && !File.Exists(Path.Combine(rollback,"myenv.exe")),"registration failure rollback");
-            Install.Apply(rollback,true,state,cli,setup);
+            refused=false;try{Install.Apply(rollback,true,state,cli,setup,license,notices);}catch(IOException){refused=true;}
+            Check(refused && state.UserPath==originalPath && state.Location=="" && !File.Exists(Path.Combine(rollback,"myenv.exe")) && !File.Exists(Path.Combine(rollback,"LICENSE")) && !File.Exists(Path.Combine(rollback,"THIRD_PARTY_NOTICES.txt")),"registration failure rollback");
+            Install.Apply(rollback,true,state,cli,setup,license,notices);
             using(var locked=new FileStream(Path.Combine(rollback,"myenv.exe"),FileMode.Open,FileAccess.Read,FileShare.None)) {
                 refused=false;try{Install.Remove(rollback,state);}catch(IOException){refused=true;}
                 Check(refused && Install.ContainsPath(state.UserPath,rollback),"locked executable keeps PATH");
@@ -277,7 +301,29 @@ static class Setup {
             File.WriteAllText(Path.Combine(rollback,"myenv.exe"),"modified");
             refused=false;try{Install.Remove(rollback,state);}catch(IOException){refused=true;}
             Check(refused && File.ReadAllText(Path.Combine(rollback,"myenv.exe"))=="modified","modified binary retained");
-            File.WriteAllText(Path.Combine(root,"result.txt"),"PASS: payload, install, upgrade, PATH ownership, uninstall, retained data, conflicts, registration rollback, locked/modified binary protection\n",Encoding.UTF8);
+            // A separate in-memory registration represents an older v1 installation.
+            var legacyState=new MemorySettings();string legacy=Path.Combine(root,"legacy");
+            Install.Apply(legacy,true,legacyState,cli,setup,license,notices);
+            byte[] legacyMarker=Encoding.UTF8.GetBytes(String.Join("\n",new [] {"myEnv-user-install-v1",legacy,"yes",Install.Digest(cli),Install.Digest(setup)})+"\n");
+            File.WriteAllBytes(Path.Combine(legacy,"myenv-install.txt"),legacyMarker);
+            File.Delete(Path.Combine(legacy,"THIRD_PARTY_NOTICES.txt"));
+            File.WriteAllText(Path.Combine(legacy,"LICENSE"),"user license");
+            refused=false;try{Install.Apply(legacy,true,legacyState,cli,setup,license,notices);}catch(IOException){refused=true;}
+            Check(refused && File.ReadAllText(Path.Combine(legacy,"LICENSE"))=="user license","legacy foreign license protection");
+            File.Delete(Path.Combine(legacy,"LICENSE"));
+            legacyState.FailNextRegistration=true;
+            refused=false;try{Install.Apply(legacy,true,legacyState,cli,setup,license,notices);}catch(IOException){refused=true;}
+            Check(refused && Install.Digest(File.ReadAllBytes(Path.Combine(legacy,"myenv-install.txt")))==Install.Digest(legacyMarker) && !File.Exists(Path.Combine(legacy,"LICENSE")) && !File.Exists(Path.Combine(legacy,"THIRD_PARTY_NOTICES.txt")),"legacy upgrade license rollback");
+            Install.Apply(legacy,true,legacyState,cli,setup,license,notices);
+            Check(File.ReadAllLines(Path.Combine(legacy,"myenv-install.txt"))[0]=="myEnv-user-install-v2" && Install.Digest(File.ReadAllBytes(Path.Combine(legacy,"LICENSE")))==Install.Digest(license),"legacy upgrade installs licenses");
+            File.WriteAllText(Path.Combine(legacy,"LICENSE"),"modified license");
+            refused=false;try{Install.Remove(legacy,legacyState);}catch(IOException){refused=true;}
+            Check(refused && File.ReadAllText(Path.Combine(legacy,"LICENSE"))=="modified license" && File.Exists(Path.Combine(legacy,"myenv.exe")),"modified license retained");
+            // Old records never grant ownership of an adjacent license on uninstall.
+            File.WriteAllBytes(Path.Combine(legacy,"myenv-install.txt"),legacyMarker);
+            Install.Remove(legacy,legacyState);
+            Check(File.ReadAllText(Path.Combine(legacy,"LICENSE"))=="modified license" && File.Exists(Path.Combine(legacy,"THIRD_PARTY_NOTICES.txt")),"legacy uninstall preserves unowned licenses");
+            File.WriteAllText(Path.Combine(root,"result.txt"),"PASS: payload, installed license bytes, install, upgrade, PATH ownership, uninstall, retained data, conflicts, registration rollback, locked/modified file protection, legacy license ownership and upgrade rollback\n",Encoding.UTF8);
             return 0;
         }catch(Exception e){if(Directory.Exists(root))File.WriteAllText(Path.Combine(root,"failure.txt"),e.ToString());return 1;}
     }

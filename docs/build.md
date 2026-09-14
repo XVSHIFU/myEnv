@@ -1,6 +1,6 @@
-# 构建开发制品
+# 构建发行制品
 
-使用 `go.mod` 指定的 Go 1.26.6。当前本地候选为 `0.1.0-rc.11`，尚未公开发布；构建成功不代表平台、性能和发布验收已经完成，具体证据见 [implementation.md](implementation.md)。
+使用 `go.mod` 指定的 Go 1.26.6。以下命令构建 `0.1.0`；构建成功不代表平台、性能和发布验收已经完成，具体交付状态与证据见 [implementation.md](implementation.md)。
 
 使用已构建的软件无需准备这些开发依赖。Windows 用户安装与首次操作见 [Windows 安装与入门](windows-install.md)，网站文档的本地构建见 [website/README.md](../website/README.md)。
 
@@ -9,29 +9,31 @@
 在 PowerShell 中运行：
 
 ```powershell
-./scripts/build-release.ps1
+./scripts/build-release.ps1 -Version 0.1.0
 ```
 
 默认构建 Windows amd64 与 Linux amd64 的 CLI/TUI，输出到 `dist/release`；脚本不提供 macOS 或 Linux GUI 目标。只构建本次需要的目标：
 
 ```powershell
-./scripts/build-release.ps1 -Targets windows-amd64
+./scripts/build-release.ps1 -Version 0.1.0 -Targets windows-amd64
 ```
 
-可用 `-Version 0.1.0-rc.11` 指定写入二进制的版本，用 `-OutputDirectory` 指定产物目录。脚本只构建和生成清单，不发布、安装或修改 PATH。所选目标全部成功后才写入本次清单；目录内其他已有文件不列入清单。
+可用 `-Version 0.1.0` 指定写入二进制的版本，用 `-OutputDirectory` 指定产物目录。脚本只构建和生成清单，不发布、安装或修改 PATH。所选目标全部成功后才写入本次清单；目录内其他已有文件不列入清单。
 
 ## 构建与打包 Windows GUI
 
 构建 Windows GUI 需要 Windows PowerShell 7、Node/npm 和锁定的前端依赖，`-GUI` 同时要求选择 Windows CLI 目标：
 
 ```powershell
-./scripts/build-release.ps1 -Version 0.1.0-rc.11 -GUI
+./scripts/build-release.ps1 -Version 0.1.0 -GUI
 ./scripts/package-windows.ps1
 ```
 
 脚本执行 `npm ci --ignore-scripts` 与前端构建，以 `gui,desktop,production` 标签构建 GUI，再注入原生图标；GUI 资源不进入 CLI。打包脚本使用 Windows .NET Framework 编译器，输出包含 GUI/CLI 的便携 ZIP、仅安装 CLI/TUI 的 setup 和分发包摘要。GUI 运行仍需 WebView2，便携包不捆绑离线运行时，当前制品未签名。
 
-默认构建目录为 `dist/release`，默认打包目录为 `dist/packages`；两处 `SHA256SUMS` 各自覆盖本次输出。准备公开候选时，最终清单须覆盖实际提供的二进制、ZIP、setup 和许可文件，并明确对应源码版本；不能用打包目录的两项摘要替代完整制品清单。
+myEnv 自身使用根目录 [MIT 许可证](../LICENSE)。便携 ZIP 内和打包输出目录均提供 `LICENSE`、`THIRD_PARTY_NOTICES.txt` 与 `third-party-manifest.json`。setup 内嵌并在实际安装目录写入前两份许可原文，安装记录校验其摘要；升级支持旧安装记录，卸载只删除已确认由安装程序拥有的文件。第三方许可独立保留，不由项目的 MIT 许可证替代。
+
+默认构建目录为 `dist/release`，默认打包目录为 `dist/packages`；两处 `SHA256SUMS` 各自覆盖本次输出，打包目录包含 ZIP、setup 和三份许可相关文件的摘要。公开发行时，最终清单须同时覆盖实际提供的二进制、ZIP、setup 和许可文件，并明确对应源码版本；不能仅用打包目录的摘要替代完整制品清单。
 
 ## 制品、源码与校验
 
@@ -43,7 +45,7 @@
 - `build-manifest.json`：版本、Go 编译器、参数、目标、文件大小、SHA-256 和源码输入证据。
 - `SHA256SUMS`：本次所选制品的摘要清单。
 
-manifest 的 `source` 记录基准提交 `base_commit`、工作区是否有未提交改动 `working_tree_modified`，以及实际构建输入的逐文件摘要和总摘要 `input_sha256`。输入涵盖 `cmd`、`internal`、`scripts`、`go.mod`、`go.sum`，包含生成的前端嵌入资源，排除依赖缓存；构建前后输入变化会使构建失败。有未提交改动的候选不能仅凭基准提交复现，交付时还须提供对应源码快照及其摘要。
+manifest 的 `source` 记录基准提交 `base_commit`、工作区是否有未提交改动 `working_tree_modified`，以及实际构建输入的逐文件摘要和总摘要 `input_sha256`。输入涵盖 `cmd`、`internal`、`scripts`、`go.mod`、`go.sum` 与根目录 `LICENSE`，包含生成的前端嵌入资源，排除依赖缓存；构建前后输入变化会使构建失败。Windows 打包还核对根 `LICENSE` 与该次构建清单一致；缺少证据或内容改变时须重新构建。有未提交改动的候选不能仅凭基准提交复现，交付时还须提供对应源码快照及其摘要。
 
 校验清单只记录文件摘要，不是签名或来源认证。性能报告必须引用实际受测制品的摘要；不同构建不能直接沿用旧报告作为门禁通过证据。
 

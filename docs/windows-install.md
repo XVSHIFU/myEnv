@@ -1,13 +1,13 @@
 # myEnv Windows 安装与入门
 
-当前为 `0.1.0-rc.11` 本地候选，尚未公开发布。实际可下载制品以 [GitHub Releases](https://github.com/XVSHIFU/myEnv/releases) 为准。Windows amd64 提供 GUI、TUI 与 CLI，制品未签名，性能及部分兼容性验收仍开放。
+首版 `0.1.0` 可从 [GitHub Releases](https://github.com/XVSHIFU/myEnv/releases/tag/v0.1.0) 下载。Windows amd64 提供 GUI、TUI 与 CLI，采用 [MIT 许可证](../LICENSE)；制品未签名，性能及部分兼容性验收仍开放。
 
 ## 选择便携包或安装向导
 
 | 方式 | 包含内容 | 适合用途 |
 | --- | --- | --- |
-| `myenv-0.1.0-rc.11-windows-amd64-portable.zip` | GUI、CLI/TUI 和第三方许可 | 用图形界面操作，或把完整目录放在自己的工具位置 |
-| `myenv-0.1.0-rc.11-windows-amd64-setup.exe` | CLI/TUI，可加入当前用户 PATH | 在终端直接输入 `myenv`，由安装器管理升级和卸载 |
+| `myenv-0.1.0-windows-amd64-portable.zip` | GUI、CLI/TUI、MIT 和第三方许可 | 用图形界面操作，或把完整目录放在自己的工具位置 |
+| `myenv-0.1.0-windows-amd64-setup.exe` | CLI/TUI、许可文件，可加入当前用户 PATH | 在终端直接输入 `myenv`，由安装器管理升级和卸载 |
 
 使用软件无需安装 Go 或 Node。Windows 需要 Windows 10 / Server 2016 或更新版本；安装向导使用系统自带的 .NET Framework 4.x。GUI 另外需要 Microsoft Edge WebView2 Runtime，CLI/TUI 不依赖 WebView2。
 
@@ -16,7 +16,7 @@
 ## 启动便携 GUI
 
 1. 完整解压 ZIP，将目录放在固定位置，例如 `C:\Tools\myEnv`。
-2. 保持同版本 `myenv-gui.exe` 和 `myenv.exe` 在同一目录，保留第三方许可文件。
+2. 保持同版本 `myenv-gui.exe` 和 `myenv.exe` 在同一目录，保留 `LICENSE` 与第三方许可文件。
 3. 双击 `myenv-gui.exe`。CLI/TUI 也可通过同目录的 `myenv.exe` 启动。
 
 缺少 WebView2 时，当前 GUI 提示通过微软 bootstrapper 联网安装。离线机器需预装微软官方 WebView2 Evergreen Standalone Installer（x64）；便携包没有捆绑离线运行时。无 WebView2 干净机器的完整验收仍开放。

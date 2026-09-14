@@ -37,7 +37,7 @@ function Get-ReleaseSourceEvidence {
             }
         }
     }
-    foreach ($name in @('go.mod','go.sum')) {
+    foreach ($name in @('go.mod','go.sum','LICENSE')) {
         $inputs.Add([pscustomobject]@{path=$name;sha256=(Get-FileHash -LiteralPath (Join-Path $sourceDirectory $name) -Algorithm SHA256).Hash.ToLowerInvariant()})
     }
     $files = @($inputs | Sort-Object path)

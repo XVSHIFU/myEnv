@@ -121,7 +121,7 @@ $builder=[Text.StringBuilder]::new()
 $null=$builder.AppendLine('myEnv — third-party copyright and license notices')
 $null=$builder.AppendLine()
 $null=$builder.AppendLine('This file reproduces notices from installed upstream source used by the selected production builds.')
-$null=$builder.AppendLine('Each component remains under its own license. No license for the original myEnv project is granted or selected by this file.')
+$null=$builder.AppendLine('Each component remains under its own license. The original myEnv project is distributed under MIT; see the accompanying LICENSE file.')
 $null=$builder.AppendLine('The Windows GUI uses the system-installed WebView2 Runtime; that runtime is not redistributed in these packages.')
 $null=$builder.AppendLine('Additional notices distributed by an upstream component are retained even when they cover code outside the selected build.')
 $null=$builder.AppendLine('Generated offline by scripts/generate-third-party-notices.ps1; source file hashes are listed in third-party-manifest.json.')
@@ -138,7 +138,8 @@ $noticePath=Join-Path $outputRoot 'THIRD_PARTY_NOTICES.txt'
 [IO.File]::WriteAllText($noticePath,$builder.ToString(),$utf8)
 $manifest=[ordered]@{
     source='Installed npm packages and Go production dependency closure, no network retrieval'
-    project_license='Not selected; project has no root LICENSE file'
+    project_license='MIT; see the accompanying LICENSE file'
+    project_license_sha256=(Get-FileHash -LiteralPath (Join-Path $sourceRoot 'LICENSE') -Algorithm SHA256).Hash.ToLowerInvariant()
     cli_only=[bool]$CLIOnly
     targets=@($targets | ForEach-Object { $_.Name })
     modules=@($modules.Keys | Where-Object { $_ -ne 'std' } | Sort-Object | ForEach-Object { [ordered]@{component=$_;version=$modules[$_].version;targets=@($modules[$_].targets | Sort-Object)} })

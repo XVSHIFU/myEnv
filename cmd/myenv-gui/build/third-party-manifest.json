@@ -1,6 +1,7 @@
 {
   "source": "Installed npm packages and Go production dependency closure, no network retrieval",
-  "project_license": "Not selected; project has no root LICENSE file",
+  "project_license": "MIT; see the accompanying LICENSE file",
+  "project_license_sha256": "19282b7d5d603a6d992624b5df0f5a60223a0151c3d3fe4b20f87128b2922de0",
   "cli_only": false,
   "targets": [
     "windows-amd64-cli",
@@ -979,5 +980,5 @@
       "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc"
     }
   ],
-  "notice_sha256": "f02af9b6cc297b854ed5de1f74d35bb4e9c89630a09c0c32da0e46802574bff4"
+  "notice_sha256": "f3be6e77e86017fddf6f5de0ba8cfd43de992fa56837d31e11827894c2517898"
 }

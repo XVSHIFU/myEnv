@@ -5,6 +5,10 @@ param(
 $ErrorActionPreference = 'Stop'
 $release = (Resolve-Path -LiteralPath $ReleaseDirectory).Path
 $manifest = Get-Content -LiteralPath (Join-Path $release 'build-manifest.json') -Raw | ConvertFrom-Json
+$license = Join-Path $PSScriptRoot '../LICENSE'
+$licenseEntry = @($manifest.source.files | Where-Object path -eq 'LICENSE')
+if ($licenseEntry.Count -ne 1 -or !(Test-Path -LiteralPath $license -PathType Leaf)) { throw 'Build source evidence must include the project LICENSE; rebuild the release first' }
+if ((Get-FileHash -LiteralPath $license -Algorithm SHA256).Hash.ToLowerInvariant() -ne $licenseEntry[0].sha256) { throw 'Project LICENSE changed since the release build; rebuild before packaging' }
 $entry = @($manifest.artifacts | Where-Object target -eq 'windows-amd64')
 if ($entry.Count -ne 1) { throw 'Expected one Windows amd64 artifact' }
 $binary = Join-Path $release 'myenv-windows-amd64.exe'
@@ -29,18 +33,23 @@ if ($gui.Count -gt 0) {
 }
 Copy-Item -LiteralPath $notice -Destination (Join-Path $portable 'THIRD_PARTY_NOTICES.txt')
 Copy-Item -LiteralPath $noticeManifest -Destination (Join-Path $portable 'third-party-manifest.json')
+Copy-Item -LiteralPath $license -Destination (Join-Path $portable 'LICENSE')
+Copy-Item -LiteralPath $license -Destination (Join-Path $output 'LICENSE')
 Copy-Item -LiteralPath $notice -Destination (Join-Path $output 'THIRD_PARTY_NOTICES.txt')
 Copy-Item -LiteralPath $noticeManifest -Destination (Join-Path $output 'third-party-manifest.json')
-Copy-Item -LiteralPath (Join-Path $PSScriptRoot '../docs/windows-install.md') -Destination (Join-Path $portable 'README.md')
+$readme = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '../docs/windows-install.md'))
+$readme = $readme.Replace('](../LICENSE)', '](LICENSE)').Replace('](../website/public/images/', '](https://xvshifu.github.io/myEnv/images/')
+$readme = $readme.Replace('](build.md)', '](https://github.com/XVSHIFU/myEnv/blob/main/docs/build.md)').Replace('](implementation.md)', '](https://github.com/XVSHIFU/myEnv/blob/main/docs/implementation.md)')
+[IO.File]::WriteAllText((Join-Path $portable 'README.md'), $readme, [Text.UTF8Encoding]::new($false))
 [IO.File]::WriteAllText((Join-Path $stage 'version.txt'), $manifest.version, [Text.UTF8Encoding]::new($false))
 $compiler = Join-Path $env:WINDIR 'Microsoft.NET/Framework64/v4.0.30319/csc.exe'
 if (!(Test-Path -LiteralPath $compiler)) { throw 'Windows .NET Framework compiler is required to package the wizard' }
 $setup = Join-Path $output "myenv-$($manifest.version)-windows-amd64-setup.exe"
-& $compiler /nologo /target:winexe /platform:x64 /optimize+ "/out:$setup" /reference:System.Windows.Forms.dll /reference:System.Drawing.dll "/win32manifest:$(Join-Path $PSScriptRoot 'windows/Setup.manifest')" "/resource:$binary,myenv.exe" "/resource:$(Join-Path $stage 'version.txt'),version.txt" "/resource:$notice,THIRD_PARTY_NOTICES.txt" (Join-Path $PSScriptRoot 'windows/Setup.cs')
+& $compiler /nologo /target:winexe /platform:x64 /optimize+ "/out:$setup" /reference:System.Windows.Forms.dll /reference:System.Drawing.dll "/win32manifest:$(Join-Path $PSScriptRoot 'windows/Setup.manifest')" "/resource:$binary,myenv.exe" "/resource:$(Join-Path $stage 'version.txt'),version.txt" "/resource:$license,LICENSE" "/resource:$notice,THIRD_PARTY_NOTICES.txt" (Join-Path $PSScriptRoot 'windows/Setup.cs')
 if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed' }
 $zip = Join-Path $output "myenv-$($manifest.version)-windows-amd64-portable.zip"
 Compress-Archive -LiteralPath $portable -DestinationPath $zip -Force
-$hashes = @($setup, $zip) | ForEach-Object {
+$hashes = @($setup, $zip, (Join-Path $output 'LICENSE'), (Join-Path $output 'THIRD_PARTY_NOTICES.txt'), (Join-Path $output 'third-party-manifest.json')) | ForEach-Object {
     '{0}  {1}' -f (Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash.ToLowerInvariant(), [IO.Path]::GetFileName($_)
 }
 [IO.File]::WriteAllLines((Join-Path $output 'SHA256SUMS'), $hashes, [Text.UTF8Encoding]::new($false))

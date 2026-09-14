@@ -5,7 +5,7 @@ const Note=({children}:{children:ReactNode})=><aside className="note">{children}
 const Shot=({file,caption,folder='installation'}:{file:string;caption:string;folder?:string})=><figure><a href={`${base}/images/${folder}/${file}`} target="_blank" rel="noreferrer"><img src={`${base}/images/${folder}/${file}`} alt={caption} loading="lazy"/></a><figcaption>{caption} · 点击查看原图</figcaption></figure>;
 export const articles:Record<string,{title:string;intro:string;body:ReactNode}>={
  gui:{title:'GUI 工作台',intro:'先选工作范围，再选版本。保存、预览和执行各有明确的一步。',body:<>
- <Note>Windows GUI 从完整便携包启动，仍需 WebView2。rc.11 是本地候选，尚未公开发布；安装方法见<a href={`${base}/guide/installation/`}>安装与演示</a>。</Note>
+ <Note>Windows GUI 从完整便携包启动，仍需 WebView2。<a href="https://github.com/XVSHIFU/myEnv/releases/tag/v0.1.0">下载 0.1.0 首版</a>，安装方法见<a href={`${base}/guide/installation/`}>安装与演示</a>。</Note>
  <h2>第一次打开：检查电脑已有环境</h2>
  <p>首次检查框会查找本机 Python、Node.js 等命令的版本与位置。勾选“同时检查一个项目目录”后，选择自己的项目文件夹，再点击“开始检查”。不想现在检查时可选“暂时跳过”；之后从“维护 → 选择检查范围”重新打开。</p>
  <p>检查在后台运行，并保存记录，后续启动不再反复弹出。它不会安装软件或修改终端的默认版本。安装、删除或手动切换过环境后，可用“维护 → 重新检查当前范围”刷新记录。</p>
@@ -60,7 +60,7 @@ export const articles:Record<string,{title:string;intro:string;body:ReactNode}>=
  <p>抽屉和底部任务区显示真实阶段，可展开原始日志。取消后等待当前操作收尾；执行结果逐项标明已完成、失败、取消或未执行。关闭已完成的抽屉后，列表会重新检查。</p>
  <p>批量操作不保证全部成功或全部撤销。已经完成的外部包变更不会因后续失败、取消或 myEnv 的环境回退而自动恢复。先查看结果，再只处理未完成项。</p>
  <h2>当前可以管理到哪里</h2>
- <p>rc.11 支持 npm/pnpm 项目包、明确 npm 全局位置，以及明确外部 Python 解释器的包操作。GUI 禁用 Node 安装脚本，Python 仅安装 wheel；需要编译、复杂 workspace 或无法确认管理器归属的情况，请用原管理器处理。</p>
+ <p>0.1.0 支持 npm/pnpm 项目包、明确 npm 全局位置，以及明确外部 Python 解释器的包操作。GUI 禁用 Node 安装脚本，Python 仅安装 wheel；需要编译、复杂 workspace 或无法确认管理器归属的情况，请用原管理器处理。</p>
  <p>myEnv 已应用的 Python 环境不能原地改包。请修改项目的 <code>pyproject.toml</code>，再通过 myEnv 同步准备新环境。CLI/TUI 保留现有工具链流程，本版包管理入口位于 Windows GUI。</p>
  </>},
  tui:{title:'TUI 终端界面',intro:'在真实终端里选择语言、查询版本、确认同步，然后运行程序。',body:<>
@@ -79,7 +79,7 @@ export const articles:Record<string,{title:string;intro:string;body:ReactNode}>=
  <p>“运行命令”分别编辑程序和参数，支持光标键、Home/End、Delete、Ctrl+U 和粘贴；高级 JSON 入口用于精确参数数组。先检查完整命令，再明确确认运行。</p>
  <p>确认后 TUI 暂时把终端交给程序，保持正常输入、输出和信号；程序结束后返回界面并显示真实退出码。仅返回、取消或退出 TUI 不会误执行等待中的命令。</p>
  <h2>维护与当前边界</h2>
- <p>“更多操作”提供诊断、锁定同步、修复预览、恢复上一次环境及清理。来源和主题在菜单中；复杂外部管理请先查看 CLI 帮助。rc.11 没有在 TUI 增加 GUI 的包管理抽屉或新包命令。</p>
+ <p>“更多操作”提供诊断、锁定同步、修复预览、恢复上一次环境及清理。来源和主题在菜单中；复杂外部管理请先查看 CLI 帮助。0.1.0 的包管理入口位于 Windows GUI，TUI 没有包管理抽屉或专用包命令。</p>
  <p>原生 Linux CLI/TUI 已有验证，Linux GUI 暂缓；WSL TUI 门禁仍在，Windows TUI 空闲 CPU 尚未达到目标。完整范围见<a href={`${base}/guide/release/`}>版本记录与已知限制</a>。</p>
  </>},
  projects:{title:'Node 与 Python 项目',intro:'运行时由 myEnv 准备，项目原生配置仍由对应生态负责。',body:<>
@@ -132,11 +132,11 @@ export const articles:Record<string,{title:string;intro:string;body:ReactNode}>=
  <h2>语言设置</h2><Code>{'myenv --lang zh-CN --help\nmyenv --lang en --help'}</Code><p>优先级为 --lang、MYENV_LANG、系统语言、英文回退。auto 在中文系统显示简体中文。参数、路径、错误码和第三方输出不翻译；run 后属于子程序的 --lang 原样传递。</p>
  <h2>镜像与证书</h2><p>MYENV_NODE_MIRROR、MYENV_UV_MIRROR、MYENV_PYTHON_MIRROR 分别指定下载镜像。需要遵循原官方目录布局；Node 新解析会记录来源和摘要，已锁定 URL 不变。uv 的固定版本和摘要验证不变。</p><p>SSL_CERT_FILE 使用绝对路径 PEM 文件；myEnv 下载器不支持 SSL_CERT_DIR。无效证书会报错，不关闭 TLS 校验。更多约束见 myenv help manual。</p></>},
  release:{title:'版本记录与已知限制',intro:'文档依据实际交付与测试记录编写，计划中的能力会明确标注。',body:<>
- <h2>0.1.0-rc.11 · 本地候选</h2><p>正在准备预发布，尚未公开上传；可下载版本以 GitHub Releases 为准。</p><ul><li>Windows GUI 区分本机检查、myEnv 默认工具链和项目环境，保留原生图标及固定任务区。</li><li>Node.js / Python 语言下提供管理工具快捷入口，按实际位置打开右侧抽屉。</li><li>包支持搜索、选择、批量管理及最新版/精确期望；官方 npm/PyPI 查询、预览确认和逐项结果贯通。</li><li>Java 支持常见版本名称与 1.8 别名；Windows/Kali TUI 明确确认后才交接运行，信号退出不会误执行命令。</li></ul><h2>历史：0.1.0-rc.1</h2><ul><li>新增 Java、Go、Rust 与 Python 官网来源。</li><li>系统发现、原管理器受限操作、预览版选择。</li><li>分组列表、中文使用提示、终端颜色与动态阶段进度。</li></ul><h2>历史：0.1.0-dev.2</h2><ul><li>中文帮助、手册与日常提示，支持英文切换。</li><li>status 与裸命令共用状态入口。</li><li>Windows 当前用户安装向导及便携包。</li><li>Windows/Kali 各 35 项定向测试通过；用户实测安装、PATH 与语言切换成功。</li></ul>
+ <h2>0.1.0 · 首版</h2><p>首版提供 Windows GUI、TUI、CLI 和原生 Linux CLI/TUI。安装包与校验清单见 <a href="https://github.com/XVSHIFU/myEnv/releases/tag/v0.1.0">GitHub Release v0.1.0</a>。</p><ul><li>Windows GUI 区分本机检查、myEnv 默认工具链和项目环境，保留原生图标及固定任务区。</li><li>Node.js / Python 语言下提供管理工具快捷入口，按实际位置打开右侧抽屉。</li><li>包支持搜索、选择、批量管理及最新版/精确期望；官方 npm/PyPI 查询、预览确认和逐项结果贯通。</li><li>Java 支持常见版本名称与 1.8 别名；Windows/Kali TUI 明确确认后才交接运行，信号退出不会误执行命令。</li></ul><h2>历史：0.1.0-rc.1</h2><ul><li>新增 Java、Go、Rust 与 Python 官网来源。</li><li>系统发现、原管理器受限操作、预览版选择。</li><li>分组列表、中文使用提示、终端颜色与动态阶段进度。</li></ul><h2>历史：0.1.0-dev.2</h2><ul><li>中文帮助、手册与日常提示，支持英文切换。</li><li>status 与裸命令共用状态入口。</li><li>Windows 当前用户安装向导及便携包。</li><li>Windows/Kali 各 35 项定向测试通过；用户实测安装、PATH 与语言切换成功。</li></ul>
  <h2>语言切换实测</h2><Shot file="image-20260909123308407.png" caption="显式切换为英文帮助"/><Shot file="image-20260909123314813.png" caption="切回简体中文帮助"/>
- <h2>当前已知限制</h2><ul><li>旧截图中 help 简介漏翻译已修复；原图继续保留对应 dev.2 的真实状态。</li><li>既有 GUI 启动、Windows TUI 空闲 CPU 及其他延迟/内存预算仍有未达标项，不将功能通过解释为性能达标。</li><li>Linux GUI 暂缓，WSL TUI 门禁仍在；macOS、musl 不在本次支持范围。</li><li>GUI 需要 WebView2；高 DPI、真实 IME、无 WebView2 干净机器及管理工具自身真实写操作仍有验收缺口。</li><li>GUI 包操作禁用安装脚本，Python 仅 wheel；同次最多100包，执行管理器自身需单项处理。复杂 workspace、未知归属和独立 uv 卸载交回原管理器。</li><li>Linux 调用者暂停期间无法执行自身取消回调；绝对截止时间由独立监督器执行。</li><li>便携包包含 Windows GUI，setup 仅安装 CLI/TUI；制品未签名，可下载版本以 GitHub Releases 实际上传为准。</li></ul><p>截图对应 dev.2；当前功能与限制以上述文字为准。</p></>},
+ <h2>当前已知限制</h2><ul><li>旧截图中 help 简介漏翻译已修复；原图继续保留对应 dev.2 的真实状态。</li><li>既有 GUI 启动、Windows TUI 空闲 CPU 及其他延迟/内存预算仍有未达标项，不将功能通过解释为性能达标。</li><li>Linux GUI 暂缓，WSL TUI 门禁仍在；macOS、musl 不在本次支持范围。</li><li>GUI 需要 WebView2；高 DPI、真实 IME、无 WebView2 干净机器及管理工具自身真实写操作仍有验收缺口。</li><li>GUI 包操作禁用安装脚本，Python 仅 wheel；同次最多100包，执行管理器自身需单项处理。复杂 workspace、未知归属和独立 uv 卸载交回原管理器。</li><li>Linux 调用者暂停期间无法执行自身取消回调；绝对截止时间由独立监督器执行。</li><li>便携包包含 Windows GUI，setup 仅安装 CLI/TUI；制品未签名，安装包见 <a href="https://github.com/XVSHIFU/myEnv/releases/tag/v0.1.0">0.1.0 下载页</a>。</li></ul><p>截图对应 dev.2；当前功能与限制以上述文字为准。</p></>},
  quickstart:{title:'快速开始',intro:'选择适合自己的入口，先完成一次环境准备，再运行项目。',body:<>
- <Note>当前为 0.1.0-rc.11 本地候选，尚未公开发布。Windows 提供 GUI、TUI 和 CLI，原生 Linux 提供 CLI/TUI。可下载版本以 <a href="https://github.com/XVSHIFU/myEnv/releases">GitHub Releases</a> 实际上传为准。</Note>
+ <Note>0.1.0 首版提供 Windows GUI、TUI 和 CLI，原生 Linux 提供 CLI/TUI。<a href="https://github.com/XVSHIFU/myEnv/releases/tag/v0.1.0">下载 0.1.0 与校验清单</a>，按需要选择便携包或安装向导。</Note>
  <h2>选一个入口</h2>
  <table><thead><tr><th>希望怎样使用</th><th>从这里开始</th></tr></thead><tbody>
  <tr><td>用图形界面检查环境、选择版本、管理包</td><td>完整解压 Windows 便携包，启动 <code>myenv-gui.exe</code>，然后阅读<a href={`${base}/guide/gui/`}>GUI 工作台</a>。</td></tr>
@@ -161,19 +161,19 @@ export const articles:Record<string,{title:string;intro:string;body:ReactNode}>=
  <p>忘记命令时运行 <code>myenv help manual</code>，遇到路径或查询问题时先看<a href={`${base}/guide/troubleshooting/`}>排障与清理</a>。</p>
  </>},
  installation:{title:'安装与演示',intro:'Windows 便携包打开 GUI，安装向导用于 CLI/TUI；原生 Linux 使用命令行制品。',body:<>
- <Note>rc.11 当前是本地候选，尚未公开发布。请以 <a href="https://github.com/XVSHIFU/myEnv/releases">GitHub Releases</a> 实际提供的文件为准；列表为空表示尚未上传。当前制品未签名。</Note>
+ <Note>从 <a href="https://github.com/XVSHIFU/myEnv/releases/tag/v0.1.0">GitHub Release v0.1.0</a> 下载安装包和 SHA256SUMS。当前制品未签名；GUI 需要 WebView2。</Note>
  <h2>选择安装方式</h2>
  <table><thead><tr><th>制品</th><th>包含内容</th></tr></thead><tbody><tr><td>Windows portable.zip</td><td>GUI、CLI/TUI、第三方许可。完整解压即可启动 GUI。</td></tr><tr><td>Windows setup.exe</td><td>CLI/TUI，可加入当前用户 PATH，提供升级和卸载入口。</td></tr><tr><td>myenv-linux-amd64</td><td>原生 Linux amd64/glibc 的 CLI/TUI，不包含 GUI。</td></tr></tbody></table>
  <p>使用发行包无需安装 Go 或 Node。Windows 需要 Windows 10 / Server 2016 或更新版本；setup 使用系统 .NET Framework 4.x。GUI 另外需要 WebView2。更多范围见<a href={`${base}/guide/support/`}>支持范围与工具链</a>。</p>
  <h2>Windows：启动便携 GUI</h2>
- <ol><li>完整解压 <code>myenv-0.1.0-rc.11-windows-amd64-portable.zip</code>，放到固定位置，例如 <code>C:\Tools\myEnv</code>。</li><li>保留同目录的 <code>myenv-gui.exe</code>、<code>myenv.exe</code> 和许可文件。</li><li>双击 <code>myenv-gui.exe</code>，按首次检查提示选择本机或项目范围。</li></ol>
+ <ol><li>完整解压 <code>myenv-0.1.0-windows-amd64-portable.zip</code>，放到固定位置，例如 <code>C:\Tools\myEnv</code>。</li><li>保留同目录的 <code>myenv-gui.exe</code>、<code>myenv.exe</code> 和许可文件。</li><li>双击 <code>myenv-gui.exe</code>，按首次检查提示选择本机或项目范围。</li></ol>
  <p>缺少 WebView2 Runtime 时，当前 GUI 提示使用微软联网 bootstrapper；离线机器须预先安装微软官方 x64 Evergreen Standalone Installer，包内没有离线运行时。完成后进入<a href={`${base}/guide/gui/`}>GUI 工作台指南</a>。</p>
  <h2>Windows：安装 CLI/TUI</h2>
- <ol><li>双击 <code>myenv-0.1.0-rc.11-windows-amd64-setup.exe</code>。</li><li>默认目录为 <code>%LOCALAPPDATA%\Programs\myEnv</code>，保持“加入当前用户 PATH”勾选。</li><li>点击“安装 / 升级”，无需管理员权限。</li><li>退出整个终端应用并重开 PowerShell，执行下列命令。只新增终端标签页不一定刷新环境变量。</li></ol>
+ <ol><li>双击 <code>myenv-0.1.0-windows-amd64-setup.exe</code>。</li><li>默认目录为 <code>%LOCALAPPDATA%\Programs\myEnv</code>，保持“加入当前用户 PATH”勾选。</li><li>点击“安装 / 升级”，无需管理员权限。</li><li>退出整个终端应用并重开 PowerShell，执行下列命令。只新增终端标签页不一定刷新环境变量。</li></ol>
  <Code>{'myenv --version\nmyenv --help\nmyenv tui'}</Code>
  <p>便携版也可通过绝对路径使用 CLI/TUI。若要直接输入 myenv，把所在目录加入用户 Path，添加的是目录而不是 exe 文件。安装器检查 PATH 同名程序；PowerShell 函数或别名可用 <code>Get-Command myenv -All</code> 检查。</p>
  <h2>核对下载文件</h2>
- <Code>{'Get-FileHash ./myenv-0.1.0-rc.11-windows-amd64-portable.zip -Algorithm SHA256'}</Code>
+ <Code>{'Get-FileHash ./myenv-0.1.0-windows-amd64-portable.zip -Algorithm SHA256'}</Code>
  <p>将结果与同次提供的 SHA256SUMS 比对。摘要检查文件完整性，不是发行者签名。安装 myenv 本身不会替换系统 Node/Python；使用 <code>myenv run</code> 明确选择项目环境。</p>
  <h2>原生 Linux</h2>
  <p>使用 amd64/glibc 制品。先检查同名命令，再选择自己的工具目录：</p>
@@ -182,7 +182,7 @@ export const articles:Record<string,{title:string;intro:string;body:ReactNode}>=
  <h2>升级与卸载</h2>
  <p>先退出正在运行的 myEnv，用新 setup 沿用原目录升级，更换目录前先卸载旧安装。Windows“已安装的应用”中的卸载只移除程序和安装器添加的 PATH 项，保留项目、环境和缓存；便携版删除自行放置的程序，并撤销自己的 PATH 项。</p>
  <h2>历史安装实拍</h2>
- <p>以下原图来自用户在 Windows 上安装 dev.2 的过程，保留原样。它们展示安装与 PATH 操作，不代表 rc.11 GUI 的当前界面；截图路径只是示例。</p>
+ <p>以下原图来自用户在 Windows 上安装 dev.2 的过程，保留原样。它们展示安装与 PATH 操作，不代表 0.1.0 GUI 的当前界面；截图路径只是示例。</p>
  <Shot file="image-20260909123106601.png" caption="dev.2 历史实拍：选择安装目录与当前用户 PATH"/>
  <Shot file="image-20260909123140890.png" caption="dev.2 历史实拍：安装完成，提示重新打开终端"/>
  <Shot file="image-20260909123218913.png" caption="dev.2 历史实拍：重新打开 PowerShell 后查看 myenv 版本和中文帮助"/>
@@ -200,7 +200,7 @@ export const articles:Record<string,{title:string;intro:string;body:ReactNode}>=
  <h2>查询后安装</h2><Code>{'myenv versions java --major 21\nmyenv versions node --search 22\nmyenv versions go --search 1.26\nmyenv versions rust --search 1.98'}</Code><p>Java 的 --major 只是缩小查询；换成 8、17、25 等即可查询其他主版本。复制查询中的完整版本可固定到具体发行。下面演示当前用户默认环境；项目内将 system install 换成 use。</p><Code>{'myenv system install java@21\nmyenv system install node@22\nmyenv system install go@1.26\nmyenv system install rust@1.98\nmyenv run --global java -version'}</Code>
  <h2>Python 的两种来源</h2><Code>{'myenv system install python@3.12 --provider astral\nmyenv run --global python --version'}</Code><p>Windows 还可查询并安装官网包：</p><Code>{'myenv versions python --provider python.org\nmyenv system install python@3.14 --provider python.org'}</Code><p>来源随声明保存，不会静默替换。Windows/Linux 的 versions python 默认查询 Astral，与默认安装一致；查询复用已有固定 uv，不隐式下载。选择官网包须显式保留 --provider python.org；Linux 官网查询仅提供发布记录，尚无 python.org 二进制或源码构建后端。</p>
  <h2>稳定版、预览版与锁定</h2><p>普通版本族只选择稳定版。Node/Python 另支持比较范围；Node 支持 ^、~，Python 支持 ~=。Java/Go/Rust 使用版本族或完整名称，不支持这类比较表达式。</p><Code>{'myenv versions java --major 26 --preview\nmyenv versions node --preview\nmyenv versions go --preview\nmyenv versions rust --channel nightly --date 2026-09-09\nmyenv use rust@nightly-2026-09-09'}</Code><p>Node nightly/rc/v8-canary、Python a/b/rc、Temurin EA 和 Go beta/rc 须指定完整预览名；Rust 支持 beta、nightly 及日期渠道。--preview 扩展查询，不自动升级环境。Rust 没有全部历史 nightly 索引，指定日期的制品也可能缺失。成功同步后以 myenv.lock 记录的精确结果为准。</p>
- <h2>平台与已验证样本</h2><p>当前候选提供 Windows amd64 CLI/TUI/GUI 与原生 Linux amd64/glibc CLI/TUI；Linux GUI 暂缓，WSL TUI 门禁仍在，macOS、musl 和 ARM 暂不支持。Windows 需要 Windows 10/Server 2016 或更新版本；GUI 还需 WebView2。Linux TTY 需要允许 pidfd 系统调用，通常为 Linux 5.3 及以上。上游运行时自身的系统要求仍须满足。</p><p>已有验证记录包含 Node 22.23.2、Astral Python 3.12.13，以及 Windows/Kali 的 Temurin jdk-21.0.12.1+1、Go 1.26.6、Rust 1.98.0。Windows 官网 Python 3.14.7 与部分预览版、Kali 日期 Rust nightly 也有定向验证。这些是实测样本，不是所有可选版本或所有操作系统的兼容承诺；当前 RC 尚缺统一的性能达标证据。GUI 包写操作的真实闭环限 Windows 隔离样本，Linux 本轮通过的是离线核心回归。</p>
+ <h2>平台与已验证样本</h2><p>0.1.0 提供 Windows amd64 CLI/TUI/GUI 与原生 Linux amd64/glibc CLI/TUI；Linux GUI 暂缓，WSL TUI 门禁仍在，macOS、musl 和 ARM 暂不支持。Windows 需要 Windows 10/Server 2016 或更新版本；GUI 还需 WebView2。Linux TTY 需要允许 pidfd 系统调用，通常为 Linux 5.3 及以上。上游运行时自身的系统要求仍须满足。</p><p>已有验证记录包含 Node 22.23.2、Astral Python 3.12.13，以及 Windows/Kali 的 Temurin jdk-21.0.12.1+1、Go 1.26.6、Rust 1.98.0。Windows 官网 Python 3.14.7 与部分预览版、Kali 日期 Rust nightly 也有定向验证。这些是实测样本，不是所有可选版本或所有操作系统的兼容承诺；0.1.0 仍有未达性能预算的项目。GUI 包写操作的真实闭环限 Windows 隔离样本，Linux 包管理已有离线核心回归，尚无真实包写操作闭环。</p>
  <h2>编译依赖与外部环境</h2><p>Windows 托管 Rust 默认使用包内 LLD；自定义链接配置优先，也可用 run --rust-linker system 选择系统流程。Rust 原生依赖仍可能需要 MSVC 与 Windows SDK。Go 设置 GOTOOLCHAIN=local，运行时不隐式下载其他工具链。</p><p>C/C++ 仅检测并提供官方安装指引。外部 uv、rustup、Conda 的操作须核验原管理器和目标；Conda base 受保护，Conda 尚无真实安装验收，rustup 不支持强制 repair。myEnv 不自动安装 Anaconda。</p>
  <h2>开发 myEnv 本身</h2><p>使用发行包无需预装 Go 或 Node。从源码构建 CLI 使用 go.mod 固定的 Go 1.26.6；开发文档站使用 Node ≥22.13.0。它们是项目构建要求，与上面的受管工具版本范围相互独立。</p></>},
 };

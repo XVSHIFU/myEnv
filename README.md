@@ -6,11 +6,11 @@
 
 [中文文档](https://xvshifu.github.io/myEnv/) · [GUI 入门](https://xvshifu.github.io/myEnv/guide/gui/) · [包与工具](https://xvshifu.github.io/myEnv/guide/packages/) · [更新记录](CHANGELOG.md) · [GitHub Releases](https://github.com/XVSHIFU/myEnv/releases)
 
-![myEnv rc.11 的 Windows 工作台：选择语言与版本，查看当前环境和任务状态](website/public/images/rc11/workbench.png)
+![myEnv 初版 Windows 工作台：选择语言与版本，查看当前环境和任务状态](website/public/images/rc11/workbench.png)
 
 *Windows 原生界面，rc.11 隔离演示项目。截图来自实际软件，具体版本和路径以你的电脑为准。*
 
-当前候选为 **0.1.0-rc.11**，正在准备预发布，尚未上传发行包。已有功能验证和仍开放的性能、平台验收分别记录在[当前状态](docs/implementation.md)中。
+首版 **0.1.0**：[下载安装包与校验清单](https://github.com/XVSHIFU/myEnv/releases/tag/v0.1.0)。
 
 ## 可以用它做什么
 
@@ -29,21 +29,25 @@
 
 终端配置、虚拟环境或后来修改的 PATH，可能使终端里的 `python` 与 GUI 检查结果不同；界面会显示实际路径和检查时间。
 
-## 安装与启动
+<details>
+<summary>安装与启动</summary>
 
-公开下载以 [GitHub Releases](https://github.com/XVSHIFU/myEnv/releases) 实际上传为准；列表为空时表示尚未提供发行包。
+在 [0.1.0 下载页](https://github.com/XVSHIFU/myEnv/releases/tag/v0.1.0) 选择适合的平台制品。
 
 | 使用方式 | 选择的制品 | 启动 |
 | --- | --- | --- |
-| Windows 图形界面 | `myenv-<版本>-windows-amd64-portable.zip` | 完整解压，双击 `myenv-gui.exe`。 |
-| Windows 终端 | 同一便携包，或 `…-windows-amd64-setup.exe` | `myenv tui` 或 `myenv --help`。 |
+| Windows 图形界面 | `myenv-0.1.0-windows-amd64-portable.zip` | 完整解压，双击 `myenv-gui.exe`。 |
+| Windows 终端 | 同一便携包，或 `myenv-0.1.0-windows-amd64-setup.exe` | `myenv tui` 或 `myenv --help`。 |
 | 原生 Linux 终端 | `myenv-linux-amd64` | 添加执行权限后运行 `./myenv-linux-amd64 tui`。 |
 
 GUI 需要 **Microsoft Edge WebView2 Runtime**，便携包不包含离线运行时。保持 GUI 与同版本的 `myenv.exe` 在同一目录；setup 目前只安装 CLI/TUI，可加入当前用户 PATH。当前制品未签名，下载后可用随包的 `SHA256SUMS` 核对完整性。
 
 详细步骤：[Windows 安装](docs/windows-install.md) · [文档站安装指南](https://xvshifu.github.io/myEnv/guide/installation/)。
 
-## 从 GUI 开始
+</details>
+
+<details>
+<summary>从 GUI 开始</summary>
 
 1. 打开软件，选择检查本机环境；需要时同时选择一个项目目录。
 2. 查看本机已安装的版本，或进入项目 / myEnv 工具链，选择需要的语言与版本。
@@ -67,7 +71,10 @@ GUI 包管理禁用 Node 安装脚本，Python 仅安装 wheel。myEnv 活动 Py
 
 [查看完整包管理说明 →](https://xvshifu.github.io/myEnv/guide/packages/)
 
-## 从终端开始
+</details>
+
+<details>
+<summary>从终端开始</summary>
 
 在已有 `.node-version`、`.nvmrc`、`.python-version` 或受支持项目清单的目录中：
 
@@ -112,6 +119,8 @@ myenv tui --global
 
 更多帮助：`myenv` 查看状态，`myenv help manual` 查看离线手册，`myenv help sync` 查看命令说明。中文系统默认中文，可通过 `--lang en` 切换。
 
+</details>
+
 ## 版本从哪里来
 
 | 工具 | 当前接入来源 | 常见选择 |
@@ -140,7 +149,7 @@ Python 默认查询复用已有固定 uv 的 Astral 目录，不为查询自动�
 | 原生 Linux amd64 / glibc | 提供 | 暂缓 |
 | WSL TUI、macOS、ARM64、musl | 不在本次支持范围 | 不提供 |
 
-rc.11 仍有性能预算、高 DPI、真实 IME、无 WebView2 干净机器，以及部分外部管理器写操作的验收缺口。已有功能验证不代表这些项目已通过；详见[当前记录](docs/implementation.md)和[性能缺口](docs/performance-gap.md)。
+0.1.0 仍有性能预算、高 DPI、真实 IME、无 WebView2 干净机器，以及部分外部管理器写操作的验收缺口。已有功能验证不代表这些项目已通过；详见[当前记录](docs/implementation.md)和[性能缺口](docs/performance-gap.md)。
 
 ## 参与开发
 
@@ -162,4 +171,10 @@ Windows 输出名可改为 `dist/myenv.exe`。GUI 与发行包构建、依赖许
 
 开发前阅读 [AGENTS.md](AGENTS.md)、[架构约定](docs/architecture.md)和[当前任务](docs/implementation.md)。缓存、临时验证和本地发行包不提交到 Git。
 
-项目自身许可证尚未选定。随制品分发的第三方组件保留各自许可，详情见[第三方声明](cmd/myenv-gui/build/THIRD_PARTY_NOTICES.txt)。
+## Community
+
+[linux.do](https://linux.do/) - A thriving developer community.
+
+## 许可证
+
+本项目采用 [MIT 许可证](LICENSE)。随制品分发的第三方组件保留各自许可，详情见[第三方声明](cmd/myenv-gui/build/THIRD_PARTY_NOTICES.txt)。
