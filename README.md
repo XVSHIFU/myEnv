@@ -6,7 +6,8 @@
 
 [中文文档](https://xvshifu.github.io/myEnv/) · [GUI 入门](https://xvshifu.github.io/myEnv/guide/gui/) · [包与工具](https://xvshifu.github.io/myEnv/guide/packages/) · [更新记录](CHANGELOG.md) · [GitHub Releases](https://github.com/XVSHIFU/myEnv/releases)
 
-![myEnv 初版 Windows 工作台：选择语言与版本，查看当前环境和任务状态](website/public/images/rc11/workbench.png)
+<img width="1084" height="771" alt="image" src="https://github.com/user-attachments/assets/49e3414f-1a7b-47a9-a93e-326bed88333a" />
+
 
 *Windows 原生界面，rc.11 隔离演示项目。截图来自实际软件，具体版本和路径以你的电脑为准。*
 
@@ -58,7 +59,7 @@ Python 下的 **uv / pip**、Node.js 下的 **npm / pnpm** 只在已检测到时
 
 ### 包与工具管理
 
-![myEnv 包管理抽屉：选择目标操作和期望版本，并预览具体变更](website/public/images/rc11/package-manager.png)
+<img width="1084" height="771" alt="image" src="https://github.com/user-attachments/assets/71e4b253-0047-47e8-b3c7-0061c7f1ecce" />
 
 “包与工具”按项目、全局安装位置或 Python 解释器分组。工具全部展示；包默认显示前 10 项，可展开、搜索、选择或全选筛选结果。单次最多管理同一位置的 100 个包。
 
