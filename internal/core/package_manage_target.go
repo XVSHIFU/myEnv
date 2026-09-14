@@ -127,8 +127,11 @@ func (s *Service) packageTarget(ctx context.Context, target PackageTarget) (pack
 			return manager, group, target, fmt.Errorf("myEnv 活动 Python 环境不能原地修改；请编辑项目依赖并预览同步，以保留旧环境和回退能力")
 		}
 		group = inspectPackageTarget(ctx, target)
-		if group.State != "available" || !sameInventoryPath(group.Root, target.Root) {
+		if group.State != "available" {
 			return manager, group, target, fmt.Errorf("Python 解释器未确认所选安装位置：%s", group.Problem)
+		}
+		if !sameInventoryPath(group.Root, target.Root) {
+			return manager, group, target, fmt.Errorf("Python 解释器属于 %s，与所选环境 %s 不一致", group.Root, target.Root)
 		}
 		pip := findManagedPackage(group, "pip")
 		if pip.Name == "" {

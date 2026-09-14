@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/pelletier/go-toml/v2"
+	"myenv/internal/config"
 )
 
 // Package inspection reads declarations and installed metadata. It never runs
@@ -418,6 +419,45 @@ print(json.dumps({'root':str(prefix),'packages':[{'name':x.metadata.get('Name') 
 	if err := json.Unmarshal([]byte(output), &decoded); err != nil {
 		group.Problem = "Python metadata output could not be read"
 		return group
+	}
+	// Python preserves the executable's spelling in sys.executable and venv
+	// prefixes. On Windows that may be RUNNER~1 or a junction, whereas selected
+	// targets already use the handle-resolved path. Resolve only metadata paths:
+	// resolving/replacing a venv executable itself would select the base Python
+	// on platforms where bin/python is a symlink. Cache repeated site-packages
+	// paths so this remains bounded independently of the distribution count.
+	resolvedPaths := map[string]string{}
+	resolve := func(path string) (string, error) {
+		if resolved, ok := resolvedPaths[path]; ok {
+			return resolved, nil
+		}
+		if !filepath.IsAbs(path) {
+			return "", fmt.Errorf("Python metadata path is not absolute")
+		}
+		if err := ctx.Err(); err != nil {
+			return "", err
+		}
+		resolved, err := config.ResolveExistingPath(path)
+		if err == nil {
+			resolvedPaths[path] = resolved
+		}
+		return resolved, err
+	}
+	decoded.Root, err = resolve(decoded.Root)
+	if err != nil {
+		group.Problem = "Python installation root could not be resolved: " + err.Error()
+		return group
+	}
+	for index := range decoded.Packages {
+		path := decoded.Packages[index].Path
+		if path == "" {
+			continue
+		}
+		decoded.Packages[index].Path, err = resolve(path)
+		if err != nil {
+			group.Problem = "Python package location could not be resolved: " + err.Error()
+			return group
+		}
 	}
 	group.Root, group.Packages, group.Truncated, group.State = decoded.Root, decoded.Packages, decoded.Truncated, "available"
 	group.Coverage = "Standard interpreter site-packages inspected in isolated mode; user site and PYTHONPATH are excluded."

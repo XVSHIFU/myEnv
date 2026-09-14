@@ -234,16 +234,28 @@ func TestPackageManageProtectsManagedPythonAndUnknownUV(t *testing.T) {
 }
 
 func TestPackageManagePythonPreviewNeverRunsSiteHooks(t *testing.T) {
+	venv, entry, sentinel := packagePythonPreviewFixture(t)
+	_, err := (&Service{}).PlanPackages(context.Background(), PackageRequest{Target: PackageTarget{Ecosystem: "python", Scope: "interpreter", Root: venv, Interpreter: entry}, Operation: "remove", Items: []PackageItemRequest{{Name: "idna"}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(sentinel); !os.IsNotExist(err) {
+		t.Fatal("read-only preview executed Python site hooks")
+	}
+}
+
+func packagePythonPreviewFixture(t *testing.T) (venv, entry, sentinel string) {
+	t.Helper()
 	python, err := exec.LookPath("python")
 	if err != nil {
 		t.Skip("existing Python required for isolated metadata fixture")
 	}
 	root := t.TempDir()
-	venv := filepath.Join(root, "venv")
+	venv = filepath.Join(root, "venv")
 	if output, err := probeInventoryCommand(context.Background(), python, []string{"-I", "-m", "venv", "--without-pip", venv}, root, 8192); err != nil {
 		t.Fatal(err, output)
 	}
-	entry := filepath.Join(venv, "bin", "python")
+	entry = filepath.Join(venv, "bin", "python")
 	site := ""
 	if runtime.GOOS == "windows" {
 		entry = filepath.Join(venv, "Scripts", "python.exe")
@@ -259,20 +271,14 @@ func TestPackageManagePythonPreviewNeverRunsSiteHooks(t *testing.T) {
 	if site == "" {
 		t.Fatal("site-packages fixture not found")
 	}
-	sentinel := filepath.Join(root, "preview-ran-hook")
+	sentinel = filepath.Join(root, "preview-ran-hook")
 	hook := "import pathlib;pathlib.Path(" + fmt.Sprintf("%q", sentinel) + ").write_text('unexpected')\n"
 	inventoryFixture(t, site, "sitecustomize.py", hook)
 	inventoryFixture(t, site, "preview.pth", hook)
 	inventoryFixture(t, site, "pip-25.0.dist-info/METADATA", "Metadata-Version: 2.1\nName: pip\nVersion: 25.0\n")
 	inventoryFixture(t, site, "pip/__main__.py", "raise RuntimeError('preview must not import pip')\n")
 	inventoryFixture(t, site, "idna-3.10.dist-info/METADATA", "Metadata-Version: 2.1\nName: idna\nVersion: 3.10\n")
-	_, err = (&Service{}).PlanPackages(context.Background(), PackageRequest{Target: PackageTarget{Ecosystem: "python", Scope: "interpreter", Root: venv, Interpreter: entry}, Operation: "remove", Items: []PackageItemRequest{{Name: "idna"}}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := os.Stat(sentinel); !os.IsNotExist(err) {
-		t.Fatal("read-only preview executed Python site hooks")
-	}
+	return venv, entry, sentinel
 }
 
 // These opt-in tests use only dedicated temporary projects/venvs. The manager
