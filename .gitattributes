@@ -1,6 +1,7 @@
 * text=auto
 .gitattributes text eol=lf
 .gitignore text eol=lf
+/LICENSE text eol=lf
 
 *.go text eol=lf
 *.mod text eol=lf
