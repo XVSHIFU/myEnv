@@ -36,6 +36,8 @@ func downloadSDK(ctx context.Context, client *http.Client, address, digest, dire
 	const maximum int64 = 512 << 20
 	hash := sha256.New()
 	writer := io.MultiWriter(file, hash)
+	progress := beginDownload(ctx, address)
+	defer progress.finish()
 	var offset, total int64
 	for {
 		req, e := http.NewRequestWithContext(ctx, "GET", address, nil)
@@ -49,7 +51,8 @@ func downloadSDK(ctx context.Context, client *http.Client, address, digest, dire
 			return "", &requestFailure{cause: e}
 		}
 		if response.StatusCode == http.StatusOK && offset == 0 {
-			n, e := io.CopyBuffer(writer, io.LimitReader(response.Body, maximum+1), make([]byte, 64<<10))
+			body := progress.reader(response.Body, responseDownloadTotal(response))
+			n, e := io.CopyBuffer(writer, io.LimitReader(body, maximum+1), make([]byte, 64<<10))
 			response.Body.Close()
 			if e != nil {
 				return "", e
@@ -69,7 +72,12 @@ func downloadSDK(ctx context.Context, client *http.Client, address, digest, dire
 			return "", fmt.Errorf("invalid SDK Content-Range")
 		}
 		total = size
-		n, e := io.CopyBuffer(writer, io.LimitReader(response.Body, end-start+2), make([]byte, 64<<10))
+		progressTotal := int64(0)
+		if responseDownloadTotal(response) == end-start+1 {
+			progressTotal = total
+		}
+		body := progress.reader(response.Body, progressTotal)
+		n, e := io.CopyBuffer(writer, io.LimitReader(body, end-start+2), make([]byte, 64<<10))
 		response.Body.Close()
 		if e != nil {
 			return "", e
@@ -82,6 +90,7 @@ func downloadSDK(ctx context.Context, client *http.Client, address, digest, dire
 			break
 		}
 	}
+	progress.finish()
 	if hex.EncodeToString(hash.Sum(nil)) != strings.ToLower(digest) {
 		return "", fmt.Errorf("CHECKSUM_MISMATCH: SDK archive differs from official digest")
 	}

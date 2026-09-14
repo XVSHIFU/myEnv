@@ -75,6 +75,11 @@ func TestSDKRealTrial(t *testing.T) {
 			t.Fatal("wrong Node output")
 		}
 	case "python":
+		t.Setenv("PYTHONHOME", filepath.Join(root, "wrong-python-home"))
+		t.Setenv("VIRTUAL_ENV", filepath.Join(root, "other-venv"))
+		if !strings.Contains(call("run", "python", "-c", "import os,sys; assert os.path.normcase(os.path.realpath(sys.prefix)) == os.path.normcase(os.path.realpath(os.environ['VIRTUAL_ENV'])); assert 'PYTHONHOME' not in os.environ; print('python-isolation-ok')"), "python-isolation-ok") {
+			t.Fatal("wrong Python isolation")
+		}
 		if !strings.Contains(call("run", "python", "-c", "import sys,ssl,sqlite3; print('myenv-sdk-ok'); print(sys.version); print(sys.base_prefix)"), "myenv-sdk-ok") {
 			t.Fatal("wrong Python output")
 		}

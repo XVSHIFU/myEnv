@@ -19,8 +19,10 @@ type UseResult struct {
 type UseRequest struct {
 	Directory, Selection string
 	AllowBuild           bool
-	ConfirmBuild         func(string) (bool, error)
-	Progress             func(SyncPhase)
+	// Preview persists the explicitly requested declaration but does not apply a generation.
+	Preview      bool
+	ConfirmBuild func(string) (bool, error)
+	Progress     func(SyncPhase)
 }
 
 func (s *Service) Use(ctx context.Context, directory, selection string) (UseResult, error) {
@@ -82,7 +84,7 @@ func (s *Service) UseWithRequest(ctx context.Context, request UseRequest) (UseRe
 	if err != nil {
 		return result, err
 	}
-	result.SyncResult, err = s.Sync(ctx, SyncRequest{Directory: root, ExpectedDigest: expectedDigest, AllowBuild: request.AllowBuild, ConfirmBuild: request.ConfirmBuild, Progress: request.Progress})
+	result.SyncResult, err = s.Sync(ctx, SyncRequest{Directory: root, ExpectedDigest: expectedDigest, DryRun: request.Preview, AllowBuild: request.AllowBuild, ConfirmBuild: request.ConfirmBuild, Progress: request.Progress})
 	if err != nil {
 		return result, fmt.Errorf("%w; use declaration_changed=%t lock_changed=%t native_lock_changed=%t; active environment unchanged; %s", err, result.DeclarationChanged, result.LockChanged, result.NativeLockChanged, s.commandHint("retry myenv sync or use myenv run --current"))
 	}

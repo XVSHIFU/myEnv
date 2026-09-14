@@ -1,0 +1,29 @@
+name: Windows GUI build
+on:
+  pull_request:
+    paths: ['cmd/myenv-gui/**', 'internal/**.go', 'scripts/set-gui-icon.ps1', 'go.mod', 'go.sum', '.github/workflows/gui.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      CGO_ENABLED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: cmd/myenv-gui/frontend/package-lock.json
+      - run: npm ci --ignore-scripts
+        working-directory: cmd/myenv-gui/frontend
+      - run: npm run build
+        working-directory: cmd/myenv-gui/frontend
+      - run: go build -trimpath -buildvcs=false -tags 'gui,desktop,production' -ldflags '-H windowsgui' ./cmd/myenv-gui
+      - run: ./scripts/set-gui-icon.ps1 -Executable ./myenv-gui.exe

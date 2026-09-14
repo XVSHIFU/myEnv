@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"myenv/internal/backend"
@@ -31,23 +32,53 @@ type Installation struct {
 	Actions []string `json:"actions"`
 }
 type Inventory struct {
-	Compilers     []CompilerCheck `json:"compiler_prerequisites,omitempty"`
-	Installations []Installation  `json:"installations"`
-	Coverage      string          `json:"coverage"`
-	Warnings      []string        `json:"warnings"`
+	Context       InventoryContext  `json:"context"`
+	Commands      []ResolvedCommand `json:"commands"`
+	Tools         []InventoryTool   `json:"tools"`
+	PackageGroups []PackageGroup    `json:"package_groups"`
+	Project       *ProjectInventory `json:"project,omitempty"`
+	Compilers     []CompilerCheck   `json:"compiler_prerequisites,omitempty"`
+	Installations []Installation    `json:"installations"`
+	Coverage      string            `json:"coverage"`
+	Warnings      []string          `json:"warnings"`
+}
+type InventoryContext struct {
+	Kind        string `json:"kind"`
+	Platform    string `json:"platform"`
+	Directory   string `json:"directory"`
+	Explanation string `json:"explanation"`
+}
+type ResolvedCommand struct {
+	Tool           string `json:"tool"`
+	Command        string `json:"command"`
+	Path           string `json:"path,omitempty"`
+	Version        string `json:"version_output,omitempty"`
+	State          string `json:"state"`
+	Problem        string `json:"problem,omitempty"`
+	InstallationID string `json:"installation_id,omitempty"`
 }
 type inventoryCandidate struct{ tool, path, source string }
 
 func (s *Service) Inventory(ctx context.Context, deep bool, extraPaths ...string) (Inventory, error) {
 	result := Inventory{Installations: []Installation{}, Warnings: []string{}, Coverage: "PATH, explicit runtime homes, common user/system locations, Python/Conda registrations and current myenv user profile; arbitrary custom directories and other users are not exhaustively scanned"}
+	result.Context = InventoryContext{Kind: "application_process", Platform: runtime.GOOS + "-" + runtime.GOARCH, Explanation: "Resolves the application's inherited PATH, without shell profiles, aliases, activated environments in other terminals, or WSL. No PATH or installation ownership is changed."}
+	result.Context.Directory, _ = os.Getwd()
+	result.Commands = resolveInventoryCommands()
 	candidates := []inventoryCandidate{}
+	// Probe PATH winners first, so a large set of other installations cannot
+	// exhaust the inspection budget before the current commands are verified.
+	for _, command := range result.Commands {
+		if command.Path != "" {
+			candidates = append(candidates, inventoryCandidate{command.Tool, command.Path, "PATH resolution"})
+		}
+	}
 	names := map[string][]string{"python": {"python", "python3"}, "node": {"node"}, "java": {"java"}, "go": {"go"}, "rust": {"rustc"}}
 	suffix := ""
 	if runtime.GOOS == "windows" {
 		suffix = ".exe"
 	}
 	addBin := func(dir, source string) {
-		if dir == "" || !filepath.IsAbs(dir) {
+		if dir == "" || !filepath.IsAbs(dir) || len(candidates) >= 4096 {
 			return
 		}
 		for tool, entries := range names {
@@ -192,6 +223,10 @@ func (s *Service) Inventory(ctx context.Context, deep bool, extraPaths ...string
 	} else if err != nil && !os.IsNotExist(err) {
 		result.Warnings = append(result.Warnings, "myenv user profile: "+err.Error())
 	}
+	if len(candidates) > 4096 {
+		result.Warnings = append(result.Warnings, "installation discovery truncated at 4096 candidates")
+		candidates = candidates[:4096]
+	}
 	discoveries := map[string][]string{}
 	for _, candidate := range candidates {
 		k := filepath.Clean(candidate.path)
@@ -207,6 +242,8 @@ func (s *Service) Inventory(ctx context.Context, deep bool, extraPaths ...string
 		}
 	}
 	seen := map[string]bool{}
+	probeDeadline := time.Now().Add(20 * time.Second)
+	probeCount := 0
 	for _, candidate := range candidates {
 		if err := ctx.Err(); err != nil {
 			return result, err
@@ -259,6 +296,8 @@ func (s *Service) Inventory(ctx context.Context, deep bool, extraPaths ...string
 			row.State = "shim"
 			row.Manager = "rustup"
 			row.Problem = "rustup dispatcher; inspect its installed toolchains rather than triggering automatic installation"
+		} else if deep && (probeCount >= 64 || time.Now().After(probeDeadline)) {
+			row.Problem = "deep inspection budget reached; executable found but not run"
 		} else if deep {
 			// WindowsApps Python aliases may open the Store; never execute them during discovery.
 			if strings.Contains(strings.ToLower(path), "\\microsoft\\windowsapps\\") {
@@ -272,16 +311,8 @@ func (s *Service) Inventory(ctx context.Context, deep bool, extraPaths ...string
 				if row.Tool == "go" {
 					args = []string{"version"}
 				}
-				probe, cancel := context.WithTimeout(ctx, 5*time.Second)
-				command := exec.CommandContext(probe, path, args...)
-				command.Env, _ = runner.Environment(os.Environ(), map[string]string{"GOTOOLCHAIN": "local", "GOWORK": "off"}, nil, runtime.GOOS == "windows")
-				command.WaitDelay = time.Second
-				output := &inventoryOutput{}
-				command.Stdout = output
-				command.Stderr = output
-				e = command.Run()
-				cancel()
-				row.Version = strings.TrimSpace(output.text.String())
+				probeCount++
+				row.Version, e = probeInventoryCommand(ctx, path, args, "", 8192)
 				if e != nil {
 					row.State = "broken"
 					row.Problem = e.Error()
@@ -302,14 +333,38 @@ func (s *Service) Inventory(ctx context.Context, deep bool, extraPaths ...string
 		}
 		return a.Path < b.Path
 	})
-	return result, nil
+	for i := range result.Commands {
+		command := &result.Commands[i]
+		for _, row := range result.Installations {
+			if sameInventoryPath(command.Path, row.Path) {
+				command.State, command.Version, command.Problem, command.InstallationID = row.State, row.Version, row.Problem, row.ID
+				break
+			}
+		}
+	}
+	result.Tools, result.PackageGroups = inspectInventoryTools(ctx, result.Commands, deep)
+	return result, ctx.Err()
 }
 
-type inventoryOutput struct{ text strings.Builder }
+type inventoryOutput struct {
+	text      strings.Builder
+	mu        sync.Mutex
+	limit     int
+	truncated bool
+}
 
 func (b *inventoryOutput) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	n := len(p)
-	remaining := 8192 - b.text.Len()
+	limit := b.limit
+	if limit == 0 {
+		limit = 8192
+	}
+	remaining := limit - b.text.Len()
+	if len(p) > remaining {
+		b.truncated = true
+	}
 	if remaining > 0 {
 		if len(p) > remaining {
 			p = p[:remaining]
@@ -317,6 +372,56 @@ func (b *inventoryOutput) Write(p []byte) (int, error) {
 		b.text.Write(p)
 	}
 	return n, nil
+}
+
+func probeInventoryCommand(ctx context.Context, path string, args []string, directory string, limit int) (string, error) {
+	probe, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	env, err := runner.Environment(os.Environ(), map[string]string{"GOTOOLCHAIN": "local", "GOWORK": "off", "PIP_DISABLE_PIP_VERSION_CHECK": "1", "UV_NO_MANAGED_PYTHON": "1", "UV_OFFLINE": "1", "COREPACK_ENABLE_NETWORK": "0"}, nil, runtime.GOOS == "windows")
+	if err != nil {
+		return "", err
+	}
+	output := &inventoryOutput{limit: limit}
+	code, err := runner.Execute(probe, runner.Process{Background: true, Executable: path, Args: args, Directory: directory, Environment: env, Stdout: output, Stderr: output})
+	if probe.Err() != nil {
+		err = probe.Err()
+	}
+	if err == nil && code != 0 {
+		err = fmt.Errorf("inspection exited with code %d", code)
+	}
+	if err == nil && output.truncated {
+		err = fmt.Errorf("inspection output exceeded %d bytes", limit)
+	}
+	return strings.TrimSpace(output.text.String()), err
+}
+
+func sameInventoryPath(a, b string) bool {
+	if a == "" || b == "" {
+		return false
+	}
+	if runtime.GOOS == "windows" {
+		return strings.EqualFold(filepath.Clean(a), filepath.Clean(b))
+	}
+	return filepath.Clean(a) == filepath.Clean(b)
+}
+
+func resolveInventoryCommands() []ResolvedCommand {
+	result := []ResolvedCommand{}
+	for _, choice := range []struct {
+		tool  string
+		names []string
+	}{{"python", []string{"python", "python3"}}, {"node", []string{"node"}}, {"java", []string{"java"}}, {"go", []string{"go"}}, {"rust", []string{"rustc"}}} {
+		row := ResolvedCommand{Tool: choice.tool, Command: choice.names[0], State: "not_found"}
+		for _, name := range choice.names {
+			path, err := exec.LookPath(name)
+			if err == nil && filepath.IsAbs(path) {
+				row.Command, row.Path, row.State = name, path, "unverified"
+				break
+			}
+		}
+		result = append(result, row)
+	}
+	return result
 }
 
 func inventoryVersionMatches(tool, output string) bool {

@@ -103,7 +103,17 @@ func reapDescendantsJobControl(ctx context.Context, start func() (int, error), f
 							continue
 						}
 					}
-					if err := signalOwnedChildren(unix.Signal(sig.(syscall.Signal))); err != nil {
+					group := 0
+					// Terminal-launched leaders own a separate process group. Keep
+					// stopped grandchildren (e.g. sh -> sleep) in the resume broadcast.
+					// The unreaped leader pins this group identity; never reuse it later.
+					if continuing != nil && !leaderReaped {
+						group = leader
+						if err := unix.Kill(-group, unix.Signal(sig.(syscall.Signal))); err != nil && err != unix.ESRCH {
+							return leaderStatus, false, err
+						}
+					}
+					if err := signalOwnedChildrenExceptGroup(unix.Signal(sig.(syscall.Signal)), group); err != nil {
 						return leaderStatus, false, err
 					}
 				}
@@ -123,6 +133,9 @@ func reapDescendantsJobControl(ctx context.Context, start func() (int, error), f
 // children cannot have their PIDs reused before we reap them. Never use this
 // routine in a process with unrelated children or concurrent waiters.
 func signalOwnedChildren(sig unix.Signal) error {
+	return signalOwnedChildrenExceptGroup(sig, 0)
+}
+func signalOwnedChildrenExceptGroup(sig unix.Signal, broadcastGroup int) error {
 	tasks, err := os.Open("/proc/self/task")
 	if err != nil {
 		return err
@@ -155,6 +168,18 @@ func signalOwnedChildren(sig unix.Signal) error {
 			pid, err := strconv.Atoi(value)
 			if err != nil || pid <= 1 {
 				return fmt.Errorf("invalid owned child PID")
+			}
+			if broadcastGroup != 0 {
+				group, err := unix.Getpgid(pid)
+				if err == unix.ESRCH {
+					continue
+				}
+				if err != nil {
+					return err
+				}
+				if group == broadcastGroup {
+					continue
+				}
 			}
 			if err := unix.Kill(pid, sig); err != nil && err != unix.ESRCH {
 				return err

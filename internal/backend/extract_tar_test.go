@@ -10,9 +10,9 @@ import (
 )
 
 func TestExtractTarGZ(t *testing.T) {
-	for _, scenario := range []string{"regular", "traversal", "absolute-link", "escaping-link", "missing-link", "hardlink", "duplicate", "crc", "valid-link"} {
+	for _, scenario := range []string{"regular", "traversal", "absolute-link", "escaping-link", "missing-link", "hardlink", "duplicate", "crc", "valid-link", "directory-link", "cyclic-directory-link"} {
 		t.Run(scenario, func(t *testing.T) {
-			if scenario == "valid-link" && runtime.GOOS == "windows" {
+			if (scenario == "valid-link" || scenario == "directory-link") && runtime.GOOS == "windows" {
 				t.Skip("Windows symlink privilege is not assumed")
 			}
 			root := t.TempDir()
@@ -35,6 +35,11 @@ func TestExtractTarGZ(t *testing.T) {
 			}
 			h := &tar.Header{Name: "node/bin/npm", Typeflag: tar.TypeSymlink, Linkname: "node"}
 			switch scenario {
+			case "directory-link":
+				h.Name = "node/man"
+				h.Linkname = "bin"
+			case "cyclic-directory-link":
+				h.Linkname = ".."
 			case "absolute-link":
 				h.Linkname = "/outside"
 			case "escaping-link":
@@ -72,7 +77,7 @@ func TestExtractTarGZ(t *testing.T) {
 			}
 			out := filepath.Join(root, "out")
 			err = ExtractTarGZ(archive, out)
-			if scenario != "regular" && scenario != "valid-link" {
+			if scenario != "regular" && scenario != "valid-link" && scenario != "directory-link" {
 				if err == nil {
 					t.Fatal("accepted invalid archive")
 				}
@@ -84,6 +89,9 @@ func TestExtractTarGZ(t *testing.T) {
 			entry := filepath.Join(out, "node", "bin", "node")
 			if scenario == "valid-link" {
 				entry = filepath.Join(out, "node", "bin", "npm")
+			}
+			if scenario == "directory-link" {
+				entry = filepath.Join(out, "node", "man", "node")
 			}
 			data, err := os.ReadFile(entry)
 			if err != nil || string(data) != "payload" {

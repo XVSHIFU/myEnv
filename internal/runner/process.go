@@ -10,7 +10,15 @@ import (
 	"path/filepath"
 )
 
+type backgroundKey struct{}
+
+// BackgroundContext requests console-free Windows backend work; it does not alter supervision.
+func BackgroundContext(ctx context.Context) context.Context {
+	return context.WithValue(ctx, backgroundKey{}, true)
+}
+
 type Process struct {
+	Background  bool
 	Completion  *TreeCompletion
 	TreeID      string
 	Executable  string
@@ -51,6 +59,9 @@ func Execute(ctx context.Context, p Process) (int, error) {
 	}
 	if !filepath.IsAbs(p.Executable) {
 		return 1, fmt.Errorf("executable must be an absolute path")
+	}
+	if ctx.Value(backgroundKey{}) == true {
+		p.Background = true
 	}
 	return executePlatform(ctx, p)
 }

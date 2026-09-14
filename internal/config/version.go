@@ -98,6 +98,9 @@ func ParseConstraint(tool, text string) (Constraint, error) {
 		}
 	}
 	if tool == "java" || tool == "go" || tool == "rust" {
+		if tool == "java" {
+			text = NormalizeJavaSelector(text)
+		}
 		if !sdkSelector(tool, text) {
 			return Constraint{}, fmt.Errorf("invalid %s version %q", tool, text)
 		}

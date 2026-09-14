@@ -1,0 +1,983 @@
+{
+  "source": "Installed npm packages and Go production dependency closure, no network retrieval",
+  "project_license": "Not selected; project has no root LICENSE file",
+  "cli_only": false,
+  "targets": [
+    "windows-amd64-cli",
+    "linux-amd64-cli",
+    "windows-amd64-gui"
+  ],
+  "modules": [
+    {
+      "component": "charm.land/bubbletea/v2",
+      "version": "v2.0.9",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "git.sr.ht/~jackmordaunt/go-toast/v2",
+      "version": "v2.0.3",
+      "targets": [
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/bep/debounce",
+      "version": "v1.2.1",
+      "targets": [
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/bmatcuk/doublestar/v4",
+      "version": "v4.10.0",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/charmbracelet/colorprofile",
+      "version": "v0.4.3",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/charmbracelet/ultraviolet",
+      "version": "v0.0.0-20260703014108-f5a850f9c2b7",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/charmbracelet/x/ansi",
+      "version": "v0.11.7",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/charmbracelet/x/term",
+      "version": "v0.2.2",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/charmbracelet/x/termios",
+      "version": "v0.1.1",
+      "targets": [
+        "linux-amd64-cli"
+      ]
+    },
+    {
+      "component": "github.com/charmbracelet/x/windows",
+      "version": "v0.2.2",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/clipperhouse/displaywidth",
+      "version": "v0.11.0",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/clipperhouse/uax29/v2",
+      "version": "v2.7.0",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/dustin/go-humanize",
+      "version": "v1.0.1",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/go-ole/go-ole",
+      "version": "v1.3.0",
+      "targets": [
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/google/uuid",
+      "version": "v1.6.0",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/inconshreveable/mousetrap",
+      "version": "v1.1.0",
+      "targets": [
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/leaanthony/go-ansi-parser",
+      "version": "v1.6.1",
+      "targets": [
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/leaanthony/slicer",
+      "version": "v1.6.0",
+      "targets": [
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/leaanthony/u",
+      "version": "v1.1.1",
+      "targets": [
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/lucasb-eyer/go-colorful",
+      "version": "v1.4.0",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/mattn/go-isatty",
+      "version": "v0.0.24",
+      "targets": [
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/mattn/go-runewidth",
+      "version": "v0.0.23",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/muesli/cancelreader",
+      "version": "v0.2.2",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/ncruces/go-strftime",
+      "version": "v1.0.0",
+      "targets": [
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/pelletier/go-toml/v2",
+      "version": "v2.4.3",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/pkg/browser",
+      "version": "v0.0.0-20240102092130-5ac0b6a4141c",
+      "targets": [
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/pkg/errors",
+      "version": "v0.9.1",
+      "targets": [
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/remyoudompheng/bigfft",
+      "version": "v0.0.0-20230129092748-24d4a6f8daec",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/rivo/uniseg",
+      "version": "v0.4.7",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/samber/lo",
+      "version": "v1.49.1",
+      "targets": [
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/spf13/cobra",
+      "version": "v1.10.2",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/spf13/pflag",
+      "version": "v1.0.9",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/tkrajina/go-reflector",
+      "version": "v0.5.8",
+      "targets": [
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/wailsapp/go-webview2",
+      "version": "v1.0.22",
+      "targets": [
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/wailsapp/mimetype",
+      "version": "v1.4.1",
+      "targets": [
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/wailsapp/wails/v2",
+      "version": "v2.14.0",
+      "targets": [
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "github.com/xo/terminfo",
+      "version": "v0.0.0-20220910002029-abceb7e1c41e",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "go.yaml.in/yaml/v3",
+      "version": "v3.0.5",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "golang.org/x/net",
+      "version": "v0.56.0",
+      "targets": [
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "golang.org/x/sync",
+      "version": "v0.22.0",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "golang.org/x/sys",
+      "version": "v0.47.0",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "golang.org/x/term",
+      "version": "v0.45.0",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "golang.org/x/text",
+      "version": "v0.39.0",
+      "targets": [
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "modernc.org/libc",
+      "version": "v1.75.6",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "modernc.org/mathutil",
+      "version": "v1.7.1",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "modernc.org/memory",
+      "version": "v1.12.1",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    },
+    {
+      "component": "modernc.org/sqlite",
+      "version": "v1.58.0",
+      "targets": [
+        "linux-amd64-cli",
+        "windows-amd64-cli",
+        "windows-amd64-gui"
+      ]
+    }
+  ],
+  "notices": [
+    {
+      "component": "charm.land/bubbletea/v2",
+      "version": "v2.0.9",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "373b3931e66627aadcfebd7771df93f3439203147e587a924508c63e20184d7f"
+    },
+    {
+      "component": "git.sr.ht/~jackmordaunt/go-toast/v2",
+      "version": "v2.0.3",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "1b57eeb121b97d5920085fddd4cf395e71b8b027051a367bec8228688d68292f"
+    },
+    {
+      "component": "github.com/bep/debounce",
+      "version": "v1.2.1",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "77d1b21a5460ffc70d50101e9490a44b35dd713dab8a6f847c54ce4d3e81234a"
+    },
+    {
+      "component": "github.com/bmatcuk/doublestar/v4",
+      "version": "v4.10.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "2391eb152e1f700051c1618a7aaa7ad86186585190ca9a30e7579c9b9d459332"
+    },
+    {
+      "component": "github.com/charmbracelet/colorprofile",
+      "version": "v0.4.3",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "57d6eeeb336030b89c0e0d12cf869f84b97a481cd00b350ef21fca995da5a39a"
+    },
+    {
+      "component": "github.com/charmbracelet/ultraviolet",
+      "version": "v0.0.0-20260703014108-f5a850f9c2b7",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "8a77c755a1d1fbdc932e86f0449549121820b6f4cc1234b12fcfc8d38013c1de"
+    },
+    {
+      "component": "github.com/charmbracelet/x/ansi",
+      "version": "v0.11.7",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "0baa4a5942a801d93f4050d2bc0039d8c037105fcd335230d118eec99a11782b"
+    },
+    {
+      "component": "github.com/charmbracelet/x/term",
+      "version": "v0.2.2",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "0baa4a5942a801d93f4050d2bc0039d8c037105fcd335230d118eec99a11782b"
+    },
+    {
+      "component": "github.com/charmbracelet/x/termios",
+      "version": "v0.1.1",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "0baa4a5942a801d93f4050d2bc0039d8c037105fcd335230d118eec99a11782b"
+    },
+    {
+      "component": "github.com/charmbracelet/x/windows",
+      "version": "v0.2.2",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "0baa4a5942a801d93f4050d2bc0039d8c037105fcd335230d118eec99a11782b"
+    },
+    {
+      "component": "github.com/clipperhouse/displaywidth",
+      "version": "v0.11.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "fcdcc889a11c39c73d36019b838af41b418eb7811af12b746ace40c3074bb96c"
+    },
+    {
+      "component": "github.com/clipperhouse/uax29/v2",
+      "version": "v2.7.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "07e9e3daaccc707c9b7d535ed1405a65d37919fdd42197fe55e68820e974688c"
+    },
+    {
+      "component": "github.com/dustin/go-humanize",
+      "version": "v1.0.1",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "a973b4498c13eb74baa2a8e5c351426a6826f2fcdd909916dbe53ee2e755fd71"
+    },
+    {
+      "component": "github.com/go-ole/go-ole",
+      "version": "v1.3.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "d883dbca28769ff23dd4368a8edb7ad9f9f23a8f86adde2875c6e41a828aac62"
+    },
+    {
+      "component": "github.com/google/uuid",
+      "version": "v1.6.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "0a8d61ed3cbfd5312326e8126c31ce9c627a283adc99131b56896d29ada04b2d"
+    },
+    {
+      "component": "github.com/inconshreveable/mousetrap",
+      "version": "v1.1.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "4819582701f150b28a563a6cd8ed0bf5a754e3c67b90ad38d78ba4131bf77795"
+    },
+    {
+      "component": "github.com/leaanthony/go-ansi-parser",
+      "version": "v1.6.1",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "d0817a3112cb46c57b987f58db0d8c71ca99f26d448a351073e3d69b6702e541"
+    },
+    {
+      "component": "github.com/leaanthony/slicer",
+      "version": "v1.6.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "6ec71bfac83b3a260158e53408a81392f84982fe19c43b4c2b6e2b6f0b44457b"
+    },
+    {
+      "component": "github.com/leaanthony/u",
+      "version": "v1.1.1",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "ff3448b5ffd013b261466bb5d7898094a845756f8a69773331ebbf66518f4109"
+    },
+    {
+      "component": "github.com/lucasb-eyer/go-colorful",
+      "version": "v1.4.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "1e4cf2a117516ec1b54041d68ed4f5d331878b04de3386f4790e7b5b9c04e1ec"
+    },
+    {
+      "component": "github.com/mattn/go-isatty",
+      "version": "v0.0.24",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "08eab1118c80885fa1fa6a6dd7303f65a379fcb3733e063d20d1bbc2c76e6fa1"
+    },
+    {
+      "component": "github.com/mattn/go-runewidth",
+      "version": "v0.0.23",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "88a2379b3ca34bf5c57127aff9dcb802bbb60ece0805cdbda65b3bd115f971d9"
+    },
+    {
+      "component": "github.com/muesli/cancelreader",
+      "version": "v0.2.2",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "8c139dbbc83b4fb055b4100b6b9402f7de3dd6bbca05015bdfcc4b392c8cfd5f"
+    },
+    {
+      "component": "github.com/ncruces/go-strftime",
+      "version": "v1.0.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "38ae43959daf953a393a585b2988672cb65a5a541aca0d0be5e72595a0a16883"
+    },
+    {
+      "component": "github.com/pelletier/go-toml/v2",
+      "version": "v2.4.3",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "26844e4b53c5adec04e557fd7dfef281cc0205a7d355626b1c68b778b99e9e7b"
+    },
+    {
+      "component": "github.com/pkg/browser",
+      "version": "v0.0.0-20240102092130-5ac0b6a4141c",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "4801bb0c5d70b980b3e1f63d1d2df8d84fec22548e3d73f03a68df1fb808791f"
+    },
+    {
+      "component": "github.com/pkg/errors",
+      "version": "v0.9.1",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "8d427fd87bc9579ea368fde3d49f9ca22eac857f91a9dec7e3004bdfab7dee86"
+    },
+    {
+      "component": "github.com/remyoudompheng/bigfft",
+      "version": "v0.0.0-20230129092748-24d4a6f8daec",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "dd26a7abddd02e2d0aba97805b31f248ef7835d9e10da289b22e3b8ab78b324d"
+    },
+    {
+      "component": "github.com/rivo/uniseg",
+      "version": "v0.4.7",
+      "source": "LICENSE.txt",
+      "scope": "Production Go dependency closure",
+      "sha256": "a59885f5f0f3b3c07cf9444db5fe399b6f0791eac82055f7b85cc65500551039"
+    },
+    {
+      "component": "github.com/samber/lo",
+      "version": "v1.49.1",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "adb3ac2e3e382989de6befdd489f4714785af8aca47c01193a9892e8b26b3860"
+    },
+    {
+      "component": "github.com/spf13/cobra",
+      "version": "v1.10.2",
+      "source": "LICENSE.txt",
+      "scope": "Production Go dependency closure",
+      "sha256": "5e3400b93bbb099e83e52bab885e7441750673c21f97988ca3f1240639b63283"
+    },
+    {
+      "component": "github.com/spf13/pflag",
+      "version": "v1.0.9",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "b8514c577c1c4b46cee454d5a882b15fa411e72c5bd7f801f241591789fce61a"
+    },
+    {
+      "component": "github.com/tkrajina/go-reflector",
+      "version": "v0.5.8",
+      "source": "LICENSE.txt",
+      "scope": "Production Go dependency closure",
+      "sha256": "3f1fc64a3fded0d8c44382af796cc434fb4026a5d3d56da296dd272277dc336f"
+    },
+    {
+      "component": "github.com/wailsapp/go-webview2",
+      "version": "v1.0.22",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "3f10f3374cf30076196eb239667ce6063c64e4275afd2b397f6343f69676bb79"
+    },
+    {
+      "component": "github.com/wailsapp/go-webview2",
+      "version": "v1.0.22",
+      "source": "webviewloader/LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "e2c9290019954c3c3664428b73b34186b2bb8faad9b2c50605d7cdd9df5c7177"
+    },
+    {
+      "component": "github.com/wailsapp/mimetype",
+      "version": "v1.4.1",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "4335e2ceb33d8d7e75125192466ae8604617b0a67492b919604fe52dc56018d9"
+    },
+    {
+      "component": "github.com/wailsapp/wails/v2",
+      "version": "v2.14.0",
+      "source": "internal/frontend/desktop/windows/winc/LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "bccedbce38390429aa2fbb6cdff1e5622be8cd14c2b5b6b1f522db1813cdbb46"
+    },
+    {
+      "component": "github.com/wailsapp/wails/v2",
+      "version": "v2.14.0",
+      "source": "internal/go-common-file-dialog/LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "2c09e92358414ef4da9739026acadfbd0663118e590238b306d70ccf60db3159"
+    },
+    {
+      "component": "github.com/wailsapp/wails/v2",
+      "version": "v2.14.0",
+      "source": "internal/typescriptify/LICENSE.txt",
+      "scope": "Production Go dependency closure",
+      "sha256": "e4794d2db458f14f6bcbd2958b58729c91f274a27c08068e65d9e521d2bd941d"
+    },
+    {
+      "component": "github.com/wailsapp/wails/v2",
+      "version": "v2.14.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "cede95c28e6e9d67d1c1e49e8ba3c20250c7d4080c3faca1579b6732327ae40d"
+    },
+    {
+      "component": "github.com/xo/terminfo",
+      "version": "v0.0.0-20220910002029-abceb7e1c41e",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "1f5f51151ba96f0492ce288bd007242f924fdad9f04002e175e951644340a891"
+    },
+    {
+      "component": "Go runtime and standard library",
+      "version": "go1.26.6",
+      "source": "LICENSE",
+      "scope": "Windows CLI/GUI and Linux CLI/TUI",
+      "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+    },
+    {
+      "component": "Go runtime and standard library",
+      "version": "go1.26.6",
+      "source": "PATENTS",
+      "scope": "Windows CLI/GUI and Linux CLI/TUI",
+      "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc"
+    },
+    {
+      "component": "go.yaml.in/yaml/v3",
+      "version": "v3.0.5",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "d18f6323b71b0b768bb5e9616e36da390fbd39369a81807cca352de4e4e6aa0b"
+    },
+    {
+      "component": "go.yaml.in/yaml/v3",
+      "version": "v3.0.5",
+      "source": "NOTICE",
+      "scope": "Production Go dependency closure",
+      "sha256": "f6c2dd3a67b576eafb89b80200b8b1627230bf3821a0c14cb99a22ac19107d00"
+    },
+    {
+      "component": "golang.org/x/net",
+      "version": "v0.56.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+    },
+    {
+      "component": "golang.org/x/net",
+      "version": "v0.56.0",
+      "source": "PATENTS",
+      "scope": "Production Go dependency closure",
+      "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc"
+    },
+    {
+      "component": "golang.org/x/sync",
+      "version": "v0.22.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+    },
+    {
+      "component": "golang.org/x/sync",
+      "version": "v0.22.0",
+      "source": "PATENTS",
+      "scope": "Production Go dependency closure",
+      "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc"
+    },
+    {
+      "component": "golang.org/x/sys",
+      "version": "v0.47.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+    },
+    {
+      "component": "golang.org/x/sys",
+      "version": "v0.47.0",
+      "source": "PATENTS",
+      "scope": "Production Go dependency closure",
+      "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc"
+    },
+    {
+      "component": "golang.org/x/term",
+      "version": "v0.45.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+    },
+    {
+      "component": "golang.org/x/term",
+      "version": "v0.45.0",
+      "source": "PATENTS",
+      "scope": "Production Go dependency closure",
+      "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc"
+    },
+    {
+      "component": "golang.org/x/text",
+      "version": "v0.39.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+    },
+    {
+      "component": "golang.org/x/text",
+      "version": "v0.39.0",
+      "source": "PATENTS",
+      "scope": "Production Go dependency closure",
+      "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc"
+    },
+    {
+      "component": "GUI SVG artwork (Devicon and Lucide)",
+      "version": "Pinned source commits recorded below",
+      "source": "cmd/myenv-gui/THIRD_PARTY_NOTICES.txt",
+      "scope": "Bundled GUI icons; original notice retained verbatim",
+      "sha256": "5e7c92db44a4b88fb5eda86f27c361897ff562bffd555d27b46d3ae308a79ecf"
+    },
+    {
+      "component": "modernc.org/libc",
+      "version": "v1.75.6",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "95ff867eb55a56935fa7492406cfa953fb7c13ca73f4c0a86ae05756b4605600"
+    },
+    {
+      "component": "modernc.org/libc",
+      "version": "v1.75.6",
+      "source": "LICENSE-3RD-PARTY.md",
+      "scope": "Production Go dependency closure",
+      "sha256": "f597097efe3d97021f89170746bd3a0fb9a8b6fb26b82043ed68a4e0283bee6c"
+    },
+    {
+      "component": "modernc.org/mathutil",
+      "version": "v1.7.1",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "bfa9bf72a72ca009fd62a8f84fca3dca67e51d93af96352723646599898b6cf5"
+    },
+    {
+      "component": "modernc.org/memory",
+      "version": "v1.12.1",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "59895e669f48f168b6b858358f6005779cdf40a265f7828813061b56af67b496"
+    },
+    {
+      "component": "modernc.org/memory",
+      "version": "v1.12.1",
+      "source": "LICENSE-GO",
+      "scope": "Production Go dependency closure",
+      "sha256": "2d36597f7117c38b006835ae7f537487207d8ec407aa9d9980794b2030cbc067"
+    },
+    {
+      "component": "modernc.org/memory",
+      "version": "v1.12.1",
+      "source": "LICENSE-LOGO",
+      "scope": "Production Go dependency closure",
+      "sha256": "5ae5bee3072a841376451b48d8cfcec7188e10543926d5870828d36c8a750dc5"
+    },
+    {
+      "component": "modernc.org/memory",
+      "version": "v1.12.1",
+      "source": "LICENSE-MMAP-GO",
+      "scope": "Production Go dependency closure",
+      "sha256": "c2eba69f20d05414538c3a5df7694dde392e065ff70882e1625e90f5d6659fff"
+    },
+    {
+      "component": "modernc.org/sqlite",
+      "version": "v1.58.0",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "c6fe05491a60ae13bcd223088d2705e36dede24e5587226231d2459ada5c4822"
+    },
+    {
+      "component": "modernc.org/sqlite",
+      "version": "v1.58.0",
+      "source": "LICENSE-SQLITE",
+      "scope": "Production Go dependency closure",
+      "sha256": "8438c9c89b849131ead81d5435cb97fcf052df5b0b286dda8a2d4c29e6cb3fd0"
+    },
+    {
+      "component": "modernc.org/sqlite",
+      "version": "v1.58.0",
+      "source": "LICENSE-SQLITE_VEC",
+      "scope": "Production Go dependency closure",
+      "sha256": "6ce72bbe12d975bd5286e5ab0a064c069693300c47bccbc57bec18485f1621ea"
+    },
+    {
+      "component": "npm:react",
+      "version": "19.2.6",
+      "source": "LICENSE",
+      "scope": "Bundled GUI JavaScript or generated runtime helper",
+      "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93"
+    },
+    {
+      "component": "npm:react-dom",
+      "version": "19.2.6",
+      "source": "LICENSE",
+      "scope": "Bundled GUI JavaScript or generated runtime helper",
+      "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93"
+    },
+    {
+      "component": "npm:rolldown",
+      "version": "1.2.8",
+      "source": "LICENSE",
+      "scope": "Bundled GUI JavaScript or generated runtime helper",
+      "sha256": "23ecfff35a5a2e80d92142f75228912c3b1abc4b5a8337a821ff4397e2f9f734"
+    },
+    {
+      "component": "npm:rolldown",
+      "version": "1.2.8",
+      "source": "THIRD-PARTY-LICENSE",
+      "scope": "Bundled GUI JavaScript or generated runtime helper",
+      "sha256": "a877291d800ed43692f3f9ae09d8e01cc6f7293ad39d43896059c188ffbb8b7c"
+    },
+    {
+      "component": "npm:scheduler",
+      "version": "0.27.0",
+      "source": "LICENSE",
+      "scope": "Bundled GUI JavaScript or generated runtime helper",
+      "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93"
+    },
+    {
+      "component": "npm:vite",
+      "version": "8.2.2",
+      "source": "LICENSE.md",
+      "scope": "Bundled GUI JavaScript or generated runtime helper",
+      "sha256": "387dd7baa307083401a27c58c362c30832f5ba1dba84f10cc22c33401523f45c"
+    },
+    {
+      "component": "std",
+      "version": "go1.26.6",
+      "source": "LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+    },
+    {
+      "component": "std",
+      "version": "go1.26.6",
+      "source": "PATENTS",
+      "scope": "Production Go dependency closure",
+      "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc"
+    },
+    {
+      "component": "std",
+      "version": "go1.26.6",
+      "source": "src/crypto/internal/boring/LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "56210f826b8f0fbac3160dfe55c97f4019eb6cdda3963b5a0eab8a8bdb62360e"
+    },
+    {
+      "component": "std",
+      "version": "go1.26.6",
+      "source": "src/vendor/golang.org/x/crypto/LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+    },
+    {
+      "component": "std",
+      "version": "go1.26.6",
+      "source": "src/vendor/golang.org/x/crypto/PATENTS",
+      "scope": "Production Go dependency closure",
+      "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc"
+    },
+    {
+      "component": "std",
+      "version": "go1.26.6",
+      "source": "src/vendor/golang.org/x/net/LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+    },
+    {
+      "component": "std",
+      "version": "go1.26.6",
+      "source": "src/vendor/golang.org/x/net/PATENTS",
+      "scope": "Production Go dependency closure",
+      "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc"
+    },
+    {
+      "component": "std",
+      "version": "go1.26.6",
+      "source": "src/vendor/golang.org/x/sys/LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+    },
+    {
+      "component": "std",
+      "version": "go1.26.6",
+      "source": "src/vendor/golang.org/x/sys/PATENTS",
+      "scope": "Production Go dependency closure",
+      "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc"
+    },
+    {
+      "component": "std",
+      "version": "go1.26.6",
+      "source": "src/vendor/golang.org/x/text/LICENSE",
+      "scope": "Production Go dependency closure",
+      "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+    },
+    {
+      "component": "std",
+      "version": "go1.26.6",
+      "source": "src/vendor/golang.org/x/text/PATENTS",
+      "scope": "Production Go dependency closure",
+      "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc"
+    }
+  ],
+  "notice_sha256": "f02af9b6cc297b854ed5de1f74d35bb4e9c89630a09c0c32da0e46802574bff4"
+}

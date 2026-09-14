@@ -51,13 +51,14 @@ Node 的 npm 业务依赖不由 myEnv 自动同步；可显式使用 myenv run n
 首次同步需联网；已完整准备且声明/锁未变的环境可复用。并非所有新项目均能离线安装。
 
 版本与锁文件
-主版本/次版本选择对应稳定系列；数值比较支持 >=、>、<=、<、!=、==，
+主版本/次版本选择对应稳定系列。Node/Python 的数值比较支持 >=、>、<=、<、!=、==，
 逗号或空格连接条件，|| 表示并集；Node 支持 ^、~ 和连字符范围，Python 支持 ~=。
+Java/Go/Rust 使用数字版本族或完整发行名，不支持上述比较范围；= 前缀可要求精确匹配。
 预发布版本须显式选择完整名称；Rust 另支持 beta/nightly 及日期渠道。无效选择器在写入前失败。
 init 对多个声明取交集；冲突需修正。
 sync --locked 要求 myenv.lock 与 Python 原生锁匹配，不更新任一锁文件。
-sync --update node 或 python 刷新指定运行时解析，不能与 --locked 同用。
-Node 锁含制品摘要证据，Python 运行时锁主要是版本证据，不应混为同等强度。
+sync --update <node|python|java|go|rust> 刷新指定运行时解析，不能与 --locked 同用。
+Node/Java/Go/Rust 与 python.org 锁含制品摘要证据；Astral Python 运行时锁主要是版本证据。
 pyproject.toml、uv.lock、uv.toml 等受支持输入变化后应重新同步。
 
 失败与回滚
@@ -71,6 +72,7 @@ myenv rollback 切换到完整的上一环境，不回退声明、锁文件、�
 myenv run node hello.js "hello world" 中文
 myenv run python hello.py
 受管 node/python/npm/npx 使用已应用环境入口；其他命令从其 PATH 查找。
+选择受管 Python 时，run 设置对应 VIRTUAL_ENV，并清除继承的 PYTHONHOME；显式 env 配置优先。
 也接受绝对路径或相对于调用目录的可执行文件路径。
 用户命令后的参数保留，包含 --lang、--json。myEnv 选项应放在命令之前。
 Windows 托管 Rust 在未配置链接器时使用同一归档自带的 LLD：rustc 增加 -C linker，
@@ -157,11 +159,22 @@ Node 下载按 SHA-256 共享缓存，每次准备复制到操作目录。项目
 
 命令参考
 
-SDK、来源与系统环境（dev.3）
-支持 Node、Python、Java（Temurin JDK）、Go、Rust。
-myenv versions java --major 21 --search 21 查询官方版本；--preview 包含预览记录。
+SDK、来源与系统环境
+支持 Node、Python、Java（Temurin HotSpot JDK x64）、Go、Rust。
+示例版本不是支持上下限；可安装版本取决于来源提供的本平台制品，不能代表全部版本均已验证。
+Java 从 Adoptium 查询 Temurin，可选择 8、11、17、21、25 等可用主版本，或完整发行名。
+myenv versions java --major 21 查询目录；myenv system install java@21 安装默认环境。
+--major 只过滤查询，不限制可安装的主版本；当前不安装其他 JDK 厂商、OpenJ9 或 JRE。
+Node 从 nodejs.org 查询当前平台官方归档，例如 myenv versions node --search 22；
+安装用 myenv system install node@22。Go 从 go.dev 官方归档查询，例如 versions go --search 1.26；
+安装用 myenv system install go@1.26。Rust 从官方完整工具链归档查询，例如 versions rust --search 1.98；
+安装用 myenv system install rust@1.98。Windows Rust 目标为 MSVC，Linux 为 GNU。
+项目内将 system install 换成 use。--preview 扩展查询，不会自动安装预览版。
 myenv use python@3.14 --provider python.org 使用官网完整 Windows x64 运行时 ZIP。
-myenv use python@3.14 --provider astral 使用固定 uv 的 Astral 构建目录。
+myenv use python@3.14 --provider astral 使用固定 uv 0.11.26 的 Astral CPython 默认变体目录。
+安装默认来源是 Astral，版本可能落后于官网；Windows versions python 默认查询官网 ZIP，
+也可显式 versions python --provider python.org，查询结果与默认 Astral 安装集并不相同。
+Linux versions python 目前仅列官网发布记录，不证明 Astral 后端可安装；没有 Astral 目录查询入口。
 来源保存在 tools.python 中，例如 python.org/3.14，不会在同步时悄悄替换来源。
 Linux 不提供本后端支持的 python.org 二进制，选择官网来源会明确报错而非改用 Astral。
 Python 预览版使用完整版本（例如 3.15.0rc2）；稳定版本范围不自动选预览版。
@@ -187,3 +200,12 @@ Conda base、未知安装器、无可靠原生重装入口的 rustup repair 会�
 外部操作不属于 myenv 环境代回滚；关闭使用该环境的程序后再执行。
 Conda 移除会删除整个环境及包，不只删除 Python。myenv 不会因此安装 Anaconda。
 系统未知路径不做全盘扫描；Windows 应用执行别名不当成可用 Python。
+
+界面入口（rc.5 本地候选）
+  myenv tui                      打开项目 TUI，必须为真实交互式终端
+  myenv tui --global             打开用户默认环境 TUI
+  myenv versions python
+                                查询已有固定 uv 的本机可安装 CPython 目录
+
+TUI：首页方向键选择语言，Enter 查询后直接进入版本列表；/筛选，Enter选择目标，再明确保存配置并预览、Enter确认同步。选择本身不写配置、不安装；Esc返回并保留筛选。g切换项目/默认，m菜单含主题、目录、来源与记录，1输入目录。运行命令逐个编辑程序和参数，Home/End、方向键、删除、Ctrl+U和粘贴可用；j保留高级JSON。运行前确认完整参数，退出Tea后同进程执行，返回界面显示真实退出码。维护操作进入“更多操作”；锁定与深诊断位于对应操作，p预发布只在版本页。c取消等待收尾，y/n本任务构建许可，q退出。
+Windows GUI 双击 myenv-gui.exe，保留同目录同版本 myenv.exe，依赖WebView2。顶部选择环境，中央版本与安装/运行命令，底部固定任务区：保存声明并预览，确认后才安装。来源、目录和原始结果默认折叠；主题、镜像与CA位于设置。运行交给外部终端，保留输出及退出码到Enter关闭；关闭GUI不取消命令。安装向导仍只安装CLI/TUI，GUI使用完整便携包。

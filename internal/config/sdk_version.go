@@ -21,6 +21,23 @@ var goPreview = regexp.MustCompile(`^[0-9]+\.[0-9]+(?:\.[0-9]+)?(?:beta|rc)[0-9]
 var javaPreview = regexp.MustCompile(`^jdk-[0-9]+(?:\.[0-9]+){0,3}\+[0-9]+-ea(?:-beta)?$`)
 var javaDatedPreview = regexp.MustCompile(`^jdk[0-9]+u-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-beta$`)
 var rustChannel = regexp.MustCompile(`^(?:beta|nightly)(?:-[0-9]{4}-[0-9]{2}-[0-9]{2})?$`)
+var javaFamilyAlias = regexp.MustCompile(`^(?:(?:java|jdk)-?)?(1\.8|[0-9]{1,2})$`)
+
+// NormalizeJavaSelector only maps conventional family names. Exact upstream
+// release/build IDs retain their spelling and other tools never use this map.
+func NormalizeJavaSelector(text string) string {
+	prefix := ""
+	if strings.HasPrefix(text, "=") {
+		prefix, text = "=", strings.TrimPrefix(text, "=")
+	}
+	if m := javaFamilyAlias.FindStringSubmatch(strings.ToLower(text)); m != nil {
+		text = m[1]
+		if text == "1.8" {
+			text = "8"
+		}
+	}
+	return prefix + text
+}
 
 func sdkSelector(tool, text string) bool {
 	text = strings.TrimPrefix(text, "=")
@@ -53,5 +70,8 @@ func sdkContains(selector, version string) bool {
 		return normalizeSDKVersion(strings.TrimPrefix(selector, "=")) == normalizeSDKVersion(version)
 	}
 	a, b := normalizeSDKVersion(selector), normalizeSDKVersion(version)
+	if javaLegacy.MatchString(a) && javaLegacy.MatchString(b) && !strings.Contains(a, "-b") && strings.HasPrefix(b, a+"-b") {
+		return true
+	}
 	return a == b || strings.HasPrefix(b, a+".") || strings.HasPrefix(b, a+"+") || strings.HasPrefix(b, a+"u")
 }
