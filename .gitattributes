@@ -1,0 +1,35 @@
+* text=auto
+.gitattributes text eol=lf
+.gitignore text eol=lf
+
+*.go text eol=lf
+*.mod text eol=lf
+*.sum text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.svg text eol=lf
+*.ps1 text eol=lf
+*.sh text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.woff2 binary
+
+# Preserve the upstream bytes recorded in the distribution license manifest.
+cmd/myenv-gui/THIRD_PARTY_NOTICES.txt -text whitespace=cr-at-eol
+# This generated file concatenates upstream notices verbatim, including spaces.
+cmd/myenv-gui/build/THIRD_PARTY_NOTICES.txt -text whitespace=cr-at-eol,-blank-at-eol
+cmd/myenv-gui/build/third-party-manifest.json -text whitespace=cr-at-eol
+cmd/myenv-gui/frontend/src/assets/icons/*LICENSE.txt -text whitespace=cr-at-eol

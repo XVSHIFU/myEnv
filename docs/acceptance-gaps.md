@@ -1,6 +1,8 @@
 # 首版验收缺口（2026-09-09）
 
-本次范围为 Windows amd64 与 Linux amd64/glibc。用户明确跳过 macOS；历史 macOS 实现、SDK、签名和原生机器要求不再阻塞本次交付。最新候选是 `.build/kali-validated-release`，完整证据见 [Kali 与 Windows 验证记录](kali-validation.md)。
+> 本文保留首版 CLI 验收基线。当前 rc.11 的 GUI/TUI、包管理和开放项见 [implementation.md](implementation.md)；下文“最新”均指本记录当时。
+
+本次范围为 Windows amd64 与 Linux amd64/glibc。用户明确跳过 macOS；历史 macOS 实现、SDK、签名和原生机器要求不再阻塞本次交付。最新候选是 `.build/kali-validated-release`，完整证据见 [Kali 与 Windows 验证记录](archive/kali-validation.md)。
 
 | 验收组 | 最新有效证据 | 仍需明确的边界 |
 | --- | --- | --- |
@@ -17,4 +19,4 @@
 Kali 父进程 VmHWM 观察峰值 23.7461 MiB；调用端与监督器聚合 RSS 采样最大 39.2422 MiB；含 Node 的树为 72.1992 MiB。聚合 RSS 重复计算共享页，且采样可能漏掉瞬时峰值，不拿父进程达标替代聚合结果。Windows 父进程峰值 12.3359 MiB，有限 myEnv+Node 树各自峰值之和上界 43.4297 MiB。
 
 是否按实测性能交付开发版已询问用户；未收到变更验收目标的答复前，不标记整体目标完成。已有可运行候选不等于所有原预算通过，也没有对外发布。
-补充：用户后续限定的 run 阶段/监督合并评估已完成，见 [本轮报告](run-stage-evaluation.md)。该限定任务没有要求或授权放宽原性能预算；源码新增初始化快路径候选尚未证明端到端收益，不替换上述已验证发行候选。
+补充：用户后续限定的 run 阶段/监督合并评估已完成，见 [本轮报告](archive/run-stage-evaluation.md)。该限定任务没有要求或授权放宽原性能预算；源码新增初始化快路径候选尚未证明端到端收益，不替换上述已验证发行候选。

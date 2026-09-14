@@ -94,14 +94,34 @@ run executes the applied environment without implicit installation.
 Managed node/python/npm/npx select entries from that environment. Other command
 names are looked up in its PATH; executable paths may be absolute or relative
 to the invocation directory. Arguments are retained. Managed Windows Rust uses bundled LLD unless a linker is explicitly configured; run --rust-linker=system disables this adjustment.
+Managed Python sets VIRTUAL_ENV and clears inherited PYTHONHOME; explicit env configuration takes precedence.
 run does not interpret shell pipelines or redirection; use your shell explicitly
 when those features are needed.
 
 SDK and system management
-versions TOOL --preview queries official available archives. Rust --channel and
---date query dated manifests; Java --major narrows API requests.
+Examples are not version limits. Available versions depend on compatible upstream
+archives for the current platform; availability is not a claim of native validation.
+Java uses Adoptium Eclipse Temurin HotSpot JDK x64: choose available majors such as
+8, 11, 17, 21 or 25, or a complete release name. Other vendors, OpenJ9 and JRE are excluded.
+myenv versions java --major 21 queries a family; myenv system install java@21 installs it.
+Node uses nodejs.org archives, Go uses go.dev archives, and Rust uses official full
+toolchain archives (Windows MSVC / Linux GNU). For example:
+  myenv versions node --search 22
+  myenv system install node@22
+  myenv versions go --search 1.26
+  myenv system install go@1.26
+  myenv versions rust --search 1.98
+  myenv system install rust@1.98
+Use use instead of system install for a project environment.
+versions TOOL --preview includes preview records without installing them. Rust --channel and
+--date query dated manifests, not a complete historical nightly index; Java --major only filters queries.
 use python@3.14 --provider python.org uses full official Windows x64 runtime ZIPs;
---provider astral uses the existing pinned uv catalog. The provider is persisted.
+--provider astral uses the pinned uv 0.11.26 catalog of default CPython builds.
+Installation defaults to Astral, which may lag python.org. The provider is persisted.
+On Windows and Linux, versions python defaults to the Astral catalog, matching installation.
+It requires the existing pinned uv and never installs it implicitly for a query.
+Explicit --provider python.org lists Windows full ZIPs or Linux upstream release pages.
+Release pages are not installable artifacts; embedded/free-threaded/test ZIPs are excluded.
 There is no supported python.org Linux binary backend; no silent fallback occurs.
 system list/doctor discover existing runtimes; doctor includes compiler prerequisites.
 C/C++ is detected, not automatically installed.
@@ -130,17 +150,19 @@ Python synchronization
 sync prepares a new venv at its final path using a fixed managed uv backend.
 It records native input digests and explicitly selects python.groups without
 automatically adding default groups. --locked never updates either lock file.
-Python runtime locks provide version evidence; Node archives provide artifact
-evidence. A changed pyproject.toml, uv.lock or uv.toml requires synchronization.
+Astral Python runtime locks provide version evidence; Node/Java/Go/Rust and python.org
+archives provide artifact evidence. A changed pyproject.toml, uv.lock or uv.toml requires synchronization.
 Build code requires --allow-build or one terminal confirmation for this invocation.
 Complex workspace input tracking and complete build-source coverage remain under development.
 On failure, the old environment is retained even when desired locks have changed;
 use run --current to run it. rollback retains declarations and native locks.
 
 Version selectors
-Bare major/minor versions select that stable release series. Numeric comparison
+Bare major/minor versions select that stable release series. Node/Python numeric
 ranges support >=, >, <=, <, != and ==, comma/space conjunctions and || unions.
-Node also supports ^, ~ and hyphen ranges; Python supports ~=. Explicit preview versions and Rust beta/nightly[-YYYY-MM-DD] are supported;
+Node also supports ^, ~ and hyphen ranges; Python supports ~=. Java/Go/Rust accept
+numeric families or complete release names, with = for an exact match, not comparison ranges.
+Explicit preview versions and Rust beta/nightly[-YYYY-MM-DD] are supported;
 stable ranges do not implicitly select previews. Invalid selectors fail before writes.
 init intersects declarations from version files and manifests; conflicting
 declarations require correction. Existing myenv.yaml files are never overwritten.
@@ -251,7 +273,7 @@ accept --global. This check does not count preparation holds or reclaim records.
 Shared Python storage
 sync/use now keep the managed uv backend and Python runtimes under the user's
 myenv data directory: LOCALAPPDATA on Windows, XDG_DATA_HOME (or ~/.local/share)
-on Linux, and ~/Library/Application Support on macOS. uv caches use the OS user
+on Linux. uv caches use the OS user
 cache directory under myenv. Project venv generations remain in .myenv/generations.
 Existing applied environments keep their original paths; no-op sync does not move
 them. Node archives are shared by SHA-256 in the user cache and copied into each operation. Use clean --cache node --dry-run to preview shared Node archive cleanup. clean --cache uv delegates cleanup to the installed pinned uv, without --force.

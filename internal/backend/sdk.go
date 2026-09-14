@@ -86,9 +86,12 @@ func (c Catalog) ResolveSDK(ctx context.Context, tool, selector, platform string
 		return empty, err
 	}
 	if tool == "java" {
+		selector = config.NormalizeJavaSelector(selector)
+		// A discovery-only page limit must never hide an explicit old SDK ID.
+		c.JavaRecent = false
 		nums := releaseNumbers.FindString(selector)
-		c.javaMajor, _ = strconv.Atoi(nums)
-		c.stableOnly = !config.IsPreview(tool, selector)
+		c.JavaMajor, _ = strconv.Atoi(nums)
+		c.IncludePreview = config.IsPreview(tool, selector)
 	}
 	rows, err := c.List(ctx, tool, platform)
 	if err != nil {
@@ -96,10 +99,10 @@ func (c Catalog) ResolveSDK(ctx context.Context, tool, selector, platform string
 	}
 	var chosen CatalogRelease
 	for _, r := range rows {
-		if (r.Channel != "stable" && !config.IsPreview(tool, selector)) || !constraint.Contains(r.Version) {
+		if r.Kind == "release_page" || (r.Channel != "stable" && !config.IsPreview(tool, selector)) || !constraint.Contains(r.Version) {
 			continue
 		}
-		if chosen.Version == "" || releaseNewer(r.Version, chosen.Version) {
+		if chosen.Version == "" || catalogReleaseNewer(r, chosen) {
 			chosen = r
 		}
 	}
@@ -194,7 +197,7 @@ func PrepareSDK(ctx context.Context, archive, directory, tool, platform string, 
 		return err
 	}
 	if tool != "rust" {
-		err = os.Rename(source, destination)
+		err = renameSDK(ctx, source, destination)
 	} else {
 		if err = os.Mkdir(destination, 0700); err != nil {
 			return err
@@ -277,19 +280,6 @@ func PrepareSDK(ctx context.Context, archive, directory, tool, platform string, 
 	if err != nil || code != 0 {
 		return fmt.Errorf("%s verification failed (exit %d): %w", tool, code, err)
 	}
-	expected := strings.TrimPrefix(strings.TrimPrefix(locked.Version, "jdk"), "-")
-	if locked.RuntimeVersion != "" {
-		expected = locked.RuntimeVersion
-	}
-	if tool == "java" {
-		expected = strings.Split(expected, "+")[0]
-		if strings.HasPrefix(expected, "8u") {
-			expected = "1.8.0_" + strings.Split(strings.TrimPrefix(expected, "8u"), "-")[0]
-		}
-		if config.IsPreview("java", locked.Version) && locked.RuntimeVersion == "" {
-			expected += "-ea"
-		}
-	}
 	verified := false
 	fields := strings.Fields(string(output.data))
 	if tool == "go" {
@@ -303,10 +293,36 @@ func PrepareSDK(ctx context.Context, archive, directory, tool, platform string, 
 		verified = len(fields) >= 2 && fields[0] == "rustc" && fields[1] == want
 	}
 	if tool == "java" {
-		verified = strings.Contains(string(output.data), "\""+expected+"\"")
+		verified = javaVersionMatches(locked, string(output.data))
 	}
 	if !verified {
 		return fmt.Errorf("%s version output differs from lock: %s", tool, output.data)
 	}
 	return os.RemoveAll(staging)
+}
+
+func javaVersionMatches(locked config.RuntimeLock, output string) bool {
+	expected := strings.TrimPrefix(strings.TrimPrefix(locked.Version, "jdk"), "-")
+	build := ""
+	if locked.RuntimeVersion != "" {
+		expected = locked.RuntimeVersion
+	}
+	expected = strings.Split(expected, "+")[0]
+	if strings.HasPrefix(expected, "8u") {
+		expected = "1.8.0_" + strings.TrimPrefix(expected, "8u")
+	}
+	if strings.HasPrefix(expected, "1.8.0_") {
+		// Adoptium metadata includes JDK 8's -bNN build, while the quoted
+		// java -version value omits it. Check that build on the runtime line.
+		if index := strings.LastIndex(expected, "-b"); index >= 0 {
+			if _, err := strconv.Atoi(expected[index+2:]); err == nil {
+				build = expected
+				expected = expected[:index]
+			}
+		}
+	}
+	if config.IsPreview("java", locked.Version) && locked.RuntimeVersion == "" {
+		expected += "-ea"
+	}
+	return strings.Contains(output, "\""+expected+"\"") && (build == "" || strings.Contains(output, "(build "+build+")"))
 }

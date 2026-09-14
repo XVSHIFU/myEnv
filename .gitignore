@@ -9,3 +9,6 @@ trial/
 *.pem
 *.key
 website/.openai/
+
+cmd/myenv-gui/frontend/node_modules/
+cmd/myenv-gui/frontend/dist/

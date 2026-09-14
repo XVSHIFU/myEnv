@@ -74,7 +74,11 @@ func createProcessInJob(p Process, job windows.Handle, stdio windows.StartupInfo
 	startup := windows.StartupInfoEx{StartupInfo: stdio}
 	startup.Cb = uint32(unsafe.Sizeof(startup))
 	startup.ProcThreadAttributeList = attributes.List()
-	err = windows.CreateProcess(application, commandLine, nil, nil, len(handles) != 0, windows.CREATE_SUSPENDED|windows.EXTENDED_STARTUPINFO_PRESENT|windows.CREATE_UNICODE_ENVIRONMENT, &block[0], directory, &startup.StartupInfo, &process)
+	flags := uint32(windows.CREATE_SUSPENDED | windows.EXTENDED_STARTUPINFO_PRESENT | windows.CREATE_UNICODE_ENVIRONMENT)
+	if p.Background {
+		flags |= windows.CREATE_NO_WINDOW
+	}
+	err = windows.CreateProcess(application, commandLine, nil, nil, len(handles) != 0, flags, &block[0], directory, &startup.StartupInfo, &process)
 	if err != nil {
 		return process, &os.PathError{Op: "create process", Path: p.Executable, Err: err}
 	}

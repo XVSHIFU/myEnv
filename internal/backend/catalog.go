@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"regexp"
 	"sort"
 	"strings"
@@ -13,23 +12,28 @@ import (
 
 // CatalogRelease describes upstream availability, not an installed environment.
 type CatalogRelease struct {
-	RuntimeVersion string `json:"runtime_version,omitempty"`
-	Tool           string `json:"tool"`
-	Version        string `json:"version"`
-	Provider       string `json:"provider"`
-	Platform       string `json:"platform"`
-	URL            string `json:"url"`
-	SHA256         string `json:"sha256,omitempty"`
-	Channel        string `json:"channel"`
-	Kind           string `json:"kind,omitempty"`
+	javaSortVersion string
+	DisplayVersion  string `json:"display_version,omitempty"`
+	Major           int    `json:"major,omitempty"`
+	LTS             bool   `json:"lts,omitempty"`
+	RuntimeVersion  string `json:"runtime_version,omitempty"`
+	Tool            string `json:"tool"`
+	Version         string `json:"version"`
+	Provider        string `json:"provider"`
+	Platform        string `json:"platform"`
+	URL             string `json:"url"`
+	SHA256          string `json:"sha256,omitempty"`
+	Channel         string `json:"channel"`
+	Kind            string `json:"kind,omitempty"`
 }
 
 type Catalog struct {
-	JavaMajor      int
+	JavaMajor int
+	// JavaRecent limits interactive discovery, not exact SDK resolution, to
+	// recent upstream pages. Callers must describe this coverage to users.
+	JavaRecent     bool
 	IncludePreview bool
 	Client         *http.Client
-	javaMajor      int
-	stableOnly     bool
 }
 
 func (c Catalog) get(ctx context.Context, address string, limit int64) ([]byte, error) {
@@ -101,7 +105,7 @@ func (c Catalog) List(ctx context.Context, tool, platform string) ([]CatalogRele
 	if err != nil {
 		return nil, err
 	}
-	sort.SliceStable(releases, func(i, j int) bool { return releaseNewer(releases[i].Version, releases[j].Version) })
+	sort.SliceStable(releases, func(i, j int) bool { return catalogReleaseNewer(releases[i], releases[j]) })
 	return releases, nil
 }
 
@@ -201,76 +205,6 @@ func (c Catalog) goReleases(ctx context.Context, osName, platform string) ([]Cat
 				channel = "preview"
 			}
 			out = append(out, CatalogRelease{Tool: "go", Version: strings.TrimPrefix(r.Version, "go"), Provider: "go.dev", Platform: platform, URL: "https://go.dev/dl/" + f.Filename, SHA256: f.SHA256, Channel: channel})
-		}
-	}
-	return out, nil
-}
-
-func (c Catalog) javaReleases(ctx context.Context, osName, platform string) ([]CatalogRelease, error) {
-	if c.javaMajor == 0 {
-		c.javaMajor = c.JavaMajor
-	}
-	data, err := c.get(ctx, "https://api.adoptium.net/v3/info/available_releases", 1<<20)
-	if err != nil {
-		return nil, err
-	}
-	var available struct {
-		Releases []int `json:"available_releases"`
-	}
-	if err = json.Unmarshal(data, &available); err != nil {
-		return nil, err
-	}
-	out := []CatalogRelease{}
-	for _, major := range available.Releases {
-		if c.javaMajor != 0 && major != c.javaMajor {
-			continue
-		}
-		for _, kind := range []string{"ga", "ea"} {
-			if c.stableOnly && kind != "ga" {
-				continue
-			}
-			for page := 0; ; page++ {
-				if page >= 1000 {
-					return nil, fmt.Errorf("Adoptium pagination exceeds bound; catalog incomplete")
-				}
-				address := fmt.Sprintf("https://api.adoptium.net/v3/assets/feature_releases/%d/%s?architecture=x64&image_type=jdk&jvm_impl=hotspot&heap_size=normal&os=%s&page=%d&page_size=20&vendor=eclipse", major, kind, osName, page)
-				data, err = c.get(ctx, address, 8<<20)
-				if err != nil {
-					// Adoptium explicitly returns 404 for an empty release page.
-					if strings.Contains(err.Error(), "HTTP 404") {
-						break
-					}
-					return nil, err
-				}
-				var rows []struct {
-					Name    string `json:"release_name"`
-					Version struct {
-						OpenJDK string `json:"openjdk_version"`
-					} `json:"version_data"`
-					Binaries []struct {
-						Package struct{ Link, Checksum string }
-					}
-				}
-				if err = json.Unmarshal(data, &rows); err != nil {
-					return nil, err
-				}
-				for _, r := range rows {
-					for _, b := range r.Binaries {
-						u, e := url.Parse(b.Package.Link)
-						if e != nil || u.Scheme != "https" || u.Host != "github.com" || !strings.HasPrefix(u.Path, "/adoptium/") {
-							return nil, fmt.Errorf("unexpected Temurin release origin")
-						}
-						channel := "stable"
-						if kind == "ea" {
-							channel = "preview"
-						}
-						out = append(out, CatalogRelease{Tool: "java", Version: r.Name, RuntimeVersion: r.Version.OpenJDK, Provider: "Eclipse Temurin", Platform: platform, URL: b.Package.Link, SHA256: b.Package.Checksum, Channel: channel})
-					}
-				}
-				if len(rows) < 20 {
-					break
-				}
-			}
 		}
 	}
 	return out, nil

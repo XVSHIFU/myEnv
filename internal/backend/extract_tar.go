@@ -12,7 +12,7 @@ import (
 )
 
 // ExtractTarGZ materializes files before links, so no archive write follows a
-// link. Only relative links to extracted regular files are supported.
+// link. Only relative links to extracted files/directories are supported.
 func ExtractTarGZ(archive, destination string) error {
 	if err := os.Mkdir(destination, 0700); err != nil {
 		return err
@@ -31,6 +31,7 @@ func ExtractTarGZ(archive, destination string) error {
 	type link struct{ name, target string }
 	var links []link
 	files := make(map[string]bool)
+	directories := make(map[string]bool)
 	seen := make(map[string]bool)
 	var total int64
 	buffer := make([]byte, 64<<10)
@@ -57,9 +58,13 @@ func ExtractTarGZ(archive, destination string) error {
 			return fmt.Errorf("archive expanded size exceeds 2 GiB")
 		}
 		total += h.Size
+		for parent := path.Dir(name); parent != "."; parent = path.Dir(parent) {
+			directories[parent] = true
+		}
 		target := filepath.Join(destination, filepath.FromSlash(name))
 		switch h.Typeflag {
 		case tar.TypeDir:
+			directories[name] = true
 			if err = os.MkdirAll(target, 0700); err != nil {
 				return err
 			}
@@ -111,13 +116,19 @@ func ExtractTarGZ(archive, destination string) error {
 		return fmt.Errorf("excessive trailing archive data")
 	}
 	for _, l := range links {
-		if !files[l.target] {
-			return fmt.Errorf("archive link %q does not target an extracted regular file", l.name)
+		if !files[l.target] && !directories[l.target] {
+			return fmt.Errorf("archive link %q does not target an extracted file or directory", l.name)
 		}
 		target := filepath.Join(destination, filepath.FromSlash(l.name))
 		if err = os.MkdirAll(filepath.Dir(target), 0700); err != nil {
 			return err
 		}
+		if directories[l.target] && strings.HasPrefix(l.name, l.target+"/") {
+			return fmt.Errorf("cyclic archive directory link %q", l.name)
+		}
+	}
+	for _, l := range links {
+		target := filepath.Join(destination, filepath.FromSlash(l.name))
 		relative, err := filepath.Rel(filepath.Dir(target), filepath.Join(destination, filepath.FromSlash(l.target)))
 		if err != nil {
 			return err

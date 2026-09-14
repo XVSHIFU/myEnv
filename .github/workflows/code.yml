@@ -1,0 +1,31 @@
+name: Go interface checks
+on:
+  pull_request:
+    paths: ['**.go', 'go.mod', 'go.sum', '.github/workflows/code.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      MYENV_TEST_PACKAGE_REAL: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: go build ./cmd/myenv
+      - run: go test ./internal/cli ./internal/backend ./internal/config ./internal/runner -run 'Test(UI|PythonRunEnvironment|VersionsRejects|CatalogJava|ResolveJava|JavaVersionOutput|Java8UpdateSelector|Run|Background|ExtractTarGZ)' -count=1
+      - name: Require existing Node for isolated package fixtures
+        run: node --version
+      - name: Require existing Python for isolated package fixtures
+        run: python --version
+      - name: Official registry contracts (mock HTTP only)
+        run: go test ./internal/backend -run '^TestPackageRegistry' -count=1
+      - name: Package plans, isolation, native locks and partial results (offline)
+        run: go test ./internal/core -run '^TestPackageManage(PythonPreview|Binds|Reports|Protects|Reject|Command|Latest)' -count=1

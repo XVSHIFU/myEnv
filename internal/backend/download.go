@@ -53,7 +53,11 @@ func downloadArtifact(ctx context.Context, client *http.Client, url, expectedSHA
 		}
 	}()
 	hash := sha256.New()
-	count, err := io.CopyBuffer(io.MultiWriter(file, hash), io.LimitReader(response.Body, maxArchive+1), make([]byte, 64<<10))
+	progress := beginDownload(ctx, url)
+	defer progress.finish()
+	body := progress.reader(response.Body, responseDownloadTotal(response))
+	count, err := io.CopyBuffer(io.MultiWriter(file, hash), io.LimitReader(body, maxArchive+1), make([]byte, 64<<10))
+	progress.finish()
 	if err != nil {
 		return "", &requestFailure{cause: err}
 	}

@@ -1,5 +1,5 @@
 export const navigation=[
- {title:'开始使用',pages:[{slug:'quickstart',title:'快速开始'},{slug:'installation',title:'安装与演示'},{slug:'support',title:'支持范围与工具链'}]},
- {title:'日常工作',pages:[{slug:'projects',title:'Node 与 Python 项目'},{slug:'versions',title:'版本、同步与回滚'},{slug:'global',title:'默认工具与已有环境'},{slug:'troubleshooting',title:'排障与清理'}]},
- {title:'参考',pages:[{slug:'commands',title:'命令速查'},{slug:'configuration',title:'配置与自动化'},{slug:'release',title:'版本记录与已知限制'}]},
+ {title:'开始使用',pages:[{slug:'quickstart',title:'快速开始'},{slug:'installation',title:'安装与演示'},{slug:'gui',title:'GUI 工作台'},{slug:'tui',title:'TUI 终端界面'}]},
+ {title:'日常工作',pages:[{slug:'packages',title:'包与工具管理'},{slug:'projects',title:'Node 与 Python 项目'},{slug:'versions',title:'版本、同步与回滚'},{slug:'global',title:'本机与默认工具'},{slug:'troubleshooting',title:'排障与清理'}]},
+ {title:'参考',pages:[{slug:'support',title:'支持范围与工具链'},{slug:'commands',title:'命令速查'},{slug:'configuration',title:'配置与自动化'},{slug:'release',title:'版本记录与已知限制'}]},
 ];

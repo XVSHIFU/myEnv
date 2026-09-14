@@ -16,7 +16,6 @@ import (
 	"github.com/spf13/cobra"
 	"myenv/internal/config"
 	"myenv/internal/core"
-	"myenv/internal/runner"
 )
 
 type result struct {
@@ -69,7 +68,7 @@ func executeContext(ctx context.Context, args []string, in io.Reader, out, diagn
 		_, err := fmt.Fprintln(out, t(message))
 		return err
 	}
-	root := &cobra.Command{Use: "myenv", Short: "Manage project development environments", Long: "myEnv manages project development environments.\n\nWorkflow: init → sync → run. Change versions with use; diagnose with doctor.\nDevelopment build: project Node/Python environments are implemented. Windows and native Linux runtime checks have passed; performance acceptance remains open. macOS is excluded from this delivery.", Version: version, SilenceErrors: true, SilenceUsage: true, Args: cobra.NoArgs}
+	root := &cobra.Command{Use: "myenv", Short: "Manage project development environments", Long: "myEnv manages project development environments.\n\nWorkflow: init → sync → run. Change versions with use; diagnose with doctor.\nDevelopment build: project Node/Python/Java/Go/Rust environments are implemented. Windows and native Linux runtime checks have passed; performance acceptance remains open. macOS is excluded from this delivery.", Version: version, SilenceErrors: true, SilenceUsage: true, Args: cobra.NoArgs}
 	root.PersistentFlags().StringVarP(&dir, "directory", "C", ".", "Project context directory")
 	root.PersistentFlags().BoolVar(&jsonOutput, "json", false, "Emit one structured JSON result")
 	root.PersistentFlags().BoolVar(&noInput, "no-input", false, "Never wait for input")
@@ -88,7 +87,7 @@ func executeContext(ctx context.Context, args []string, in io.Reader, out, diagn
 		}
 	}()
 	root.PersistentPreRunE = func(cmd *cobra.Command, _ []string) error {
-		if !jsonOutput && !noInput && !verbose && cmd.Name() != "run" && cmd.Name() != "shell-init" && terminalANSI(diagnostic) {
+		if !jsonOutput && !noInput && !verbose && cmd.Name() != "run" && cmd.Name() != "shell-init" && cmd.Name() != "tui" && terminalANSI(diagnostic) {
 			diagnostic = display
 			cmd.SetErr(display)
 			cmd.SetOut(&progressOutput{display: display, out: out})
@@ -100,7 +99,7 @@ func executeContext(ctx context.Context, args []string, in io.Reader, out, diagn
 		}
 		// run owns child signal forwarding in runner. Other operations need
 		// cancellation so downloads/scans stop and preparation can unwind.
-		if cmd.Name() != "run" {
+		if cmd.Name() != "run" && cmd.Name() != "tui" {
 			operationContext, stop := signal.NotifyContext(cmd.Context(), operationSignals()...)
 			stopSignals = stop
 			cmd.SetContext(operationContext)
@@ -277,6 +276,7 @@ func executeContext(ctx context.Context, args []string, in io.Reader, out, diagn
 	root.AddCommand(doctorCmd)
 	root.AddCommand(cleanCommand(&dir, &jsonOutput, userConfigDirectory, lang))
 	addHelp(root, &jsonOutput, lang)
+	addTUI(root, &dir, &jsonOutput, &noInput, userConfigDirectory)
 	addRun(root, &dir, &jsonOutput, userConfigDirectory, lang)
 	localizeHelp(root, lang)
 	root.SetIn(in)
@@ -298,49 +298,7 @@ func executeContext(ctx context.Context, args []string, in io.Reader, out, diagn
 		// Cobra can stop at an unknown flag before seeing a later --json.
 		// Recover output intent only on failure; normal parsing remains authoritative.
 		jsonOutput = errorJSONRequested(args, jsonOutput)
-		f := &failure{Code: "USAGE_ERROR", Message: err.Error(), NextAction: "Run myenv --help."}
-		exit := 2
-		if operationError {
-			f.Code = "INVALID_CONFIG"
-			f.NextAction = "Check project input files and retry."
-		}
-		var pathErr *os.PathError
-		var executionErr *runFailure
-		if errors.As(err, &executionErr) {
-			f.Code = "RUN_FAILED"
-			f.NextAction = executionErr.nextAction()
-			exit = 1
-		}
-		for _, code := range []string{"INPUT_CHANGED", "LOCK_OUT_OF_DATE", "DOWNLOAD_FAILED", "CHECKSUM_MISMATCH", "SYNC_FAILED", "ENV_NOT_READY"} {
-			if strings.HasPrefix(err.Error(), code+":") {
-				f.Code = code
-				f.NextAction = "Check the reported cause and retry myenv sync; the prior applied generation is retained."
-				exit = 1
-			}
-		}
-		if errors.As(err, &pathErr) && f.Code != "ENV_NOT_READY" {
-			f.Code = "IO_ERROR"
-			f.NextAction = "Check that the project directory exists and is accessible, then retry."
-			exit = 1
-		}
-		var needs *config.NeedsInput
-		var environmentErr *environmentConfigError
-		if errors.As(err, &environmentErr) {
-			f.NextAction = environmentErr.nextAction()
-		}
-		if errors.As(err, &needs) {
-			f.Code = "NEEDS_INPUT"
-			f.NextAction = needs.Message
-			exit = 3
-		}
-		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-			f.Code = "CANCELED"
-			f.NextAction = "Inspect current status before retrying; completed changes are retained."
-			exit = 130
-		}
-		if executionErr != nil && errors.Is(err, runner.ErrTreeUnconfirmed) {
-			f.NextAction = executionErr.nextAction()
-		}
+		f, exit := describeFailure(err, operationError)
 		if jsonOutput {
 			_ = json.NewEncoder(out).Encode(result{Schema: 1, Error: f, Data: errorData, Changed: errorChanged})
 		} else {
