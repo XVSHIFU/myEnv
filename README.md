@@ -1,46 +1,85 @@
 # myEnv
 
-[中文使用文档](https://xvshifu.github.io/myEnv/) · [发行包](https://github.com/XVSHIFU/myEnv/releases) · [性能差距](docs/performance-gap.md)
+在桌面或终端里查看已有开发环境，为项目选择工具版本，并管理 Node.js / Python 的包与工具。
 
-myEnv 用声明文件管理项目与当前用户默认的 Node/Python/Java JDK/Go/Rust 开发环境。日常流程是 `init → sync → run`；`sync` 准备新环境代，成功后切换活动引用，失败时保留原环境。`run` 使用已应用环境，不隐式下载或安装。
+**Python · Node.js · Java · Go · Rust** — Windows GUI、Windows / Linux TUI 与 CLI 共用同一个环境内核。
 
-当前为开发版本，性能验收仍有未达标项。Windows amd64 与原生 Linux amd64/glibc（Kali VMware）已完成真实 Node/Python、混合项目、镜像和失败恢复验证；PowerShell、Bash、zsh、fish 接入已有实际运行证据。按用户要求，本次交付跳过 macOS；产品仍拒绝 WSL。Windows 与 Kali 的部分延迟超过原预算，不能将功能验证通过等同于性能达标。详细证据和开放项见 [实现记录](docs/implementation.md)，目标行为见 [架构方案](docs/architecture.md)。
+[中文文档](https://xvshifu.github.io/myEnv/) · [GUI 入门](https://xvshifu.github.io/myEnv/guide/gui/) · [包与工具](https://xvshifu.github.io/myEnv/guide/packages/) · [更新记录](CHANGELOG.md) · [GitHub Releases](https://github.com/XVSHIFU/myEnv/releases)
 
-## 从源码开始
+![myEnv rc.11 的 Windows 工作台：选择语言与版本，查看当前环境和任务状态](website/public/images/rc11/workbench.png)
 
-Windows 试用也可直接使用安装向导或便携包，见 [安装与入门](docs/windows-install.md)。安装向导默认加入当前用户 PATH，重新打开终端后即可输入 `myenv`；不会修改系统 Node/Python。当前发布候选为 `0.1.0-rc.1`，尚未公开发布；发布条件见 [发布检查单](docs/release-readiness.md)。
+*Windows 原生界面，rc.11 隔离演示项目。截图来自实际软件，具体版本和路径以你的电脑为准。*
 
-中文系统默认显示简体中文帮助和日常提示；用 `myenv --lang en --help` 切换英文，或设置 `MYENV_LANG=zh-CN`。优先级为命令行参数、专用环境变量、系统语言、英文回退。JSON、补全脚本和用户命令输出保持既有合同。直接运行 `myenv` 或 `myenv status` 均可查看当前项目状态。
+当前候选为 **0.1.0-rc.11**，正在准备预发布，尚未上传发行包。已有功能验证和仍开放的性能、平台验收分别记录在[当前状态](docs/implementation.md)中。
 
-需要 Go 1.26.6。Windows 执行路径要求 Windows 10 或更新版本（Server 2016 或更新版本），以便在创建子进程时直接关联 Job；该版本下限不代表这些系统版本均已完成验收。Windows PowerShell 中，在源码目录运行：
+## 可以用它做什么
 
-```powershell
-./scripts/build-release.ps1 -Targets windows-amd64
-$myenv = (Resolve-Path ./dist/release/myenv-windows-amd64.exe).Path
-& $myenv --version
-& $myenv help manual
+- **看清已有环境。** 首次检查本机命令、实际路径和已安装版本，也可选择一个项目一起检查。保存后不再弹出，之后从维护页刷新。
+- **按项目选择版本。** 使用 `myenv.yaml` 声明工具，预览后同步。准备成功才切换活动环境；失败保留旧代，运行命令不会暗中安装。
+- **管理包与工具。** 在 GUI 中查询官方目录、选择版本、更新或卸载。支持搜索、批量选择和逐项结果，操作前明确作用位置。
+- **选适合自己的入口。** GUI 提供工作台、进度和管理抽屉；TUI 用键盘完成环境选择与同步；CLI 适合脚本、远程终端和自动化。
+
+### 三种环境各管什么
+
+| 位置 | 含义 |
+| --- | --- |
+| 本机环境 | 应用启动时继承的 PATH 命令与其他已发现安装。检查不会自动接管安装，也不会改终端默认版本。 |
+| myEnv 默认工具链 | 当前用户独立的一套受管版本，通过 `myenv run --global …` 使用；不会自动加入系统 PATH。 |
+| 项目环境 | 当前目录自己的声明、锁和已应用环境；默认不继承 myEnv 默认工具链。 |
+
+终端配置、虚拟环境或后来修改的 PATH，可能使终端里的 `python` 与 GUI 检查结果不同；界面会显示实际路径和检查时间。
+
+## 安装与启动
+
+公开下载以 [GitHub Releases](https://github.com/XVSHIFU/myEnv/releases) 实际上传为准；列表为空时表示尚未提供发行包。
+
+| 使用方式 | 选择的制品 | 启动 |
+| --- | --- | --- |
+| Windows 图形界面 | `myenv-<版本>-windows-amd64-portable.zip` | 完整解压，双击 `myenv-gui.exe`。 |
+| Windows 终端 | 同一便携包，或 `…-windows-amd64-setup.exe` | `myenv tui` 或 `myenv --help`。 |
+| 原生 Linux 终端 | `myenv-linux-amd64` | 添加执行权限后运行 `./myenv-linux-amd64 tui`。 |
+
+GUI 需要 **Microsoft Edge WebView2 Runtime**，便携包不包含离线运行时。保持 GUI 与同版本的 `myenv.exe` 在同一目录；setup 目前只安装 CLI/TUI，可加入当前用户 PATH。当前制品未签名，下载后可用随包的 `SHA256SUMS` 核对完整性。
+
+详细步骤：[Windows 安装](docs/windows-install.md) · [文档站安装指南](https://xvshifu.github.io/myEnv/guide/installation/)。
+
+## 从 GUI 开始
+
+1. 打开软件，选择检查本机环境；需要时同时选择一个项目目录。
+2. 查看本机已安装的版本，或进入项目 / myEnv 工具链，选择需要的语言与版本。
+3. **保存并预览 → 核对变更 → 确认同步**。仅选中版本不会立即安装。
+4. 同步完成后进入“运行命令”。底部始终保留任务状态，展开可查看阶段、结果和原始日志。
+
+Python 下的 **uv / pip**、Node.js 下的 **npm / pnpm** 只在已检测到时显示快捷入口，点击直接进入管理抽屉；小窗口会调整入口位置。
+
+### 包与工具管理
+
+![myEnv 包管理抽屉：选择目标操作和期望版本，并预览具体变更](website/public/images/rc11/package-manager.png)
+
+“包与工具”按项目、全局安装位置或 Python 解释器分组。工具全部展示；包默认显示前 10 项，可展开、搜索、选择或全选筛选结果。单次最多管理同一位置的 100 个包。
+
+- npm 支持官方关键词搜索与版本查询；PyPI 使用完整包名查询。官方未找到与网络失败分别提示。
+- 期望可设为精确版本或“最新版”。最新版在预览时解析为具体版本，不会在后台自动升级。
+- 安装、更新、切换与卸载都先预览，再确认执行。批量操作展示每个包的结果，失败或取消不会被描述成全部成功。
+- **pip 属于具体 Python 解释器；uv 是 Astral 开发的独立工具。** 管理范围在抽屉中明确显示，同名多位置先选择位置。
+
+GUI 包管理禁用 Node 安装脚本，Python 仅安装 wheel。myEnv 活动 Python 环境通过声明与同步更新，不能原地改包；外部包操作不会随环境代回退。复杂 workspace、未知管理器归属及独立 uv 卸载会提示交回原管理方式。
+
+[查看完整包管理说明 →](https://xvshifu.github.io/myEnv/guide/packages/)
+
+## 从终端开始
+
+在已有 `.node-version`、`.nvmrc`、`.python-version` 或受支持项目清单的目录中：
+
+```sh
+myenv init
+myenv sync
+myenv run node --version
 ```
 
-构建脚本输出制品、`build-manifest.json` 和 `SHA256SUMS`，不会安装或修改 PATH。摘要用于核对文件，不是签名。其他构建目标及参数见 [构建说明](docs/build.md)。
+`init` 生成声明而不覆盖已有文件，`sync` 准备并应用环境，`run` 使用已应用版本。Python 项目最后一行可改为 `myenv run python --version`。
 
-可以一直通过绝对路径调用。如果需要安装到自己的工具目录，先用 `Get-Command myenv -All` 检查同名命令，再把所选制品复制为该目录下的 `myenv.exe`，显式将目录加入 PATH。myEnv 不自动修改 shell 配置。
-
-## 安装当前用户默认工具
-
-```powershell
-myenv system install java@17
-myenv run --global java -version
-myenv list
-myenv system list --details
-```
-
-这里的 system 管理当前用户的 myenv 默认环境，不会把 JDK 自动加入系统 PATH。Python 可显式使用 `--provider python.org`（Windows）或 `--provider astral`。Java 来源为 Eclipse Temurin。外部安装须核验原管理器，不支持任意来源无条件接管。
-
-终端自动启用状态颜色与动态阶段提示；`NO_COLOR=1` 关闭装饰，`--no-input` 或 `--verbose` 使用逐行阶段日志，`--json` 保持结构化输出。
-
-## 第一个项目
-
-在自己的项目目录中建立 `myenv.yaml`，版本值使用字符串：
+也可直接创建 `myenv.yaml`，只保留需要的工具，再运行 `myenv sync`：
 
 ```yaml
 schema: 1
@@ -49,89 +88,78 @@ tools:
   python: "3.12"
 ```
 
-如果项目已有 `.node-version`、`.nvmrc`、`.python-version` 或支持的项目清单，也可以运行 `myenv init` 从声明生成配置；它不会覆盖已有 `myenv.yaml`。缺失或冲突的输入在非交互模式下返回错误。
+调整版本、核对环境、预览清理：
 
-可选的 `env` 映射用于普通字符串环境变量；凭据从调用进程环境传入。Windows 环境变量名不区分大小写，配置中不能同时声明 `Path` 和 `PATH` 等冲突键；Linux/macOS 保留大小写区别。
-
-下面用安装后的 `myenv` 命令示例；使用源码制品时，在 PowerShell 中将其替换为 `& $myenv`：
-
-```text
-myenv sync --dry-run
-myenv sync
-myenv run node --version
-myenv run python --version
-myenv
-```
-
-裸命令显示当前项目状态。可用 `myenv -C <项目目录> ...` 指定上下文。Python 项目依赖继续写在 `pyproject.toml` 中，由原生 `uv.lock` 锁定；myEnv 不接管业务代码或项目数据。Python 构建需要本次调用的终端确认，或显式 `--allow-build`；此参数允许构建代码以当前用户权限执行，不提供沙箱。
-
-`sync` 和 `use` 将检查、等待工作区锁、准备工具或依赖、验证与应用等阶段提示写到 stderr。使用 `--json` 时，stdout 仍只输出结构化结果；无变更同步不会显示工具准备阶段。
-
-`run` 启动子进程后透传其退出码。Linux 子进程被信号终止时返回 `128 + 信号编号`，例如 SIGINT 为 130、SIGQUIT 为 131、SIGTERM 为 143；若子进程自行处理信号并正常退出，则保留它选择的退出码。Windows 使用原生进程退出状态。启动前失败使用 myEnv 错误类别。租约收尾失败会写入 stderr，不覆盖已完成子进程的退出码。
-
-Linux 监督器转发 INT、TERM、HUP、QUIT 和 CONT；当前开发版已接入 Ctrl-Z 暂停及 `fg`/`bg` 前台恢复，并通过隔离 WSL Bash/PTY 测试。TTY 运行需要内核提供并允许 pidfd_open/pidfd_send_signal（通常为 Linux 5.3 及以上）；无法取得调用端进程句柄时会在启动子进程前报错。暂停期间的截止取消已接入监督器独立回收与调用端恢复；手工取消竞态、其他 Shell 及原生 Linux 产品验收仍待完成。更详细的退出与清理说明见离线命令 `myenv help manual`。
-
-## 锁定、更新和恢复
-
-```text
-myenv sync --locked --no-input --json
+```sh
 myenv use node@22
+myenv sync --locked --no-input
 myenv doctor
-myenv doctor --deep
-myenv rollback
-myenv run --current node --version
-```
-
-`--locked` 要求已有且匹配的锁文件，不更新锁。普通 `sync` 失败后，期望声明或锁文件可能已经改变，但原活动环境仍保留；`run --current` 明确使用已应用配置。`rollback` 切换到保留的前一代，不回退声明、锁文件、代码或数据。
-
-快速检查不会逐文件检测手工篡改。`doctor --deep` 比较受管代内容与记录的基线，不执行修复；外部共享解释器内容、Python 字节码缓存和 ACL 不在该检查范围内。需要重建时运行 `myenv sync --rebuild --locked`，这不会重装共享基础解释器或清空共享缓存。
-
-`doctor` 也会只读检查运行保护记录。JSON 的 `data.run_protection` 为 `present` 或 `none`；`present` 表示记录仍保留，不证明对应进程仍存活，也不表示可以强制删除环境。`data.protection_detail` 和文本输出会给出清理预览提示：项目使用 `myenv clean --dry-run`，全局环境使用 `myenv clean --global --dry-run`。此检查不统计准备中的操作保护，也不自动回收记录。
-
-`run` 后的参数属于子命令，例如 `myenv run node script.js --json` 会把 `--json` 传给 Node 脚本。myEnv 自身的 `--json` 不适用于 `run`；其他支持它的命令输出一个包含 `schema/ok/changed/data/error` 的对象。非交互模式和 `--json` 不等待输入。myEnv 退出码为成功 0、执行或环境错误 1、用法或配置错误 2、需要输入或授权 3；子进程已运行时透传其退出状态。租约收尾失败会另写 stderr 诊断。
-
-## 用户默认工具和补全
-
-```text
-myenv use --global python@3.12
-myenv run --global python --version
-myenv doctor --global
-myenv completion powershell
-```
-
-用户 profile 与项目声明独立，项目不隐式继承 profile 工具。`--global` 不是管理员或系统范围安装；它使用当前用户配置目录。补全命令只输出脚本，不修改 shell profile。各 shell 的启用方式见 `myenv help manual`。
-
-已有 profile 后，可在 PowerShell 显式运行 `myenv shell-init powershell | Out-String | Invoke-Expression`，让当前 Shell 中的 `node`、`npm`、`npx` 或 `python`（按 profile 声明）调用 `run --global`。这些函数优先于 PATH 中的同名命令；不会修改 PATH 或 Shell 文件，关闭 Shell 即可取消。添加工具或移动 myEnv 后重新执行。Bash、Zsh、Fish 的启用方式见离线手册。子程序直接查找可执行文件时仍使用其自身 PATH。
-
-重新加载只定义当前声明的包装函数，不删除旧函数。删除 profile 工具或卸载 myEnv 后，应开启新 Shell；`shell-init` 不保存或恢复被覆盖的用户同名函数。
-
-Node 镜像可通过调用环境中的 `MYENV_NODE_MIRROR` 显式指定，例如 `https://mirror.example/node/dist`。镜像需提供官方目录布局的 `index.json`、版本目录和 `SHASUMS256.txt`。新解析的地址与摘要会写入锁文件；已有锁定地址保持不变。选择可信来源，镜像提供的摘要不是签名。基址不接受凭据、查询参数或片段；取消此变量后恢复默认官方源。
-
-`MYENV_UV_MIRROR` 指定固定 uv 引擎的下载基址，其下需提供 `<版本>/<官方归档文件名>`；内置版本和 SHA-256 校验保持不变。已安装的引擎会继续复用。
-
-`MYENV_PYTHON_MIRROR` 通过 uv 的 `python install --mirror` 指定 CPython 下载基址，保留 python-build-standalone 的发布目录与归档布局。已有共享解释器继续复用；该设置不把 Python 的版本锁提升为制品摘要锁。
-
-自定义 CA 使用 `SSL_CERT_FILE` 指向绝对路径的 PEM 证书文件。myEnv 的 Node/uv 引擎下载接受不超过 4 MiB 的普通文件，以其中证书替换默认信任根；uv 子进程继承同一变量。无效或空证书文件会报错，不关闭 TLS 验证，也不修改系统证书库。myEnv 下载器尚不支持 `SSL_CERT_DIR`。
-
-## 清理和卸载
-
-先预览再清理项目中不再使用的代：
-
-```text
 myenv clean --dry-run
-myenv clean
-myenv clean --cache node --dry-run
-myenv clean --cache uv --dry-run
 ```
 
-项目清理保留活动代、前一代和仍受租约或准备操作保护的对象。准备阶段已有明确的子进程完成记录、但未发布的操作，也可在获得工作区锁后恢复并清理；预览是当前候选快照，实际清理会重新检查。无法确认进程已退出的历史记录会继续受保护，不应通过手工删除租约来强制回收。`clean` 不接受 `--global`。共享 Node 下载缓存和 uv 缓存使用独立的 `--cache` 入口；这些命令不卸载共享解释器。
+`use` 等于修改声明并同步；`--locked` 不改锁。Python 受管项目依赖以 `pyproject.toml` / `uv.lock` 为准；Node 项目依赖使用项目自己的包管理器或 GUI 显式管理。
 
-卸载命令本身时，删除自己安装的 `myenv.exe`，并撤销自己添加的 PATH 或补全配置。这个操作保留项目的 `myenv.yaml`、锁文件、`.myenv` 环境和用户共享数据。项目 venv 可能引用共享 Python 解释器；删除共享运行时会破坏依赖它的项目，当前没有完整的自动数据卸载流程。
+### 用键盘操作 TUI
 
-完整离线命令参考可运行 `myenv help manual`，单命令帮助为 `myenv help sync` 等。开发和验证规则见 [AGENTS.md](AGENTS.md)。
+```sh
+myenv tui
+myenv tui --global
+```
 
-范围补充：macOS 不属于本次交付；历史交叉构建不代表已支持。Linux 的独立监督器在调用端暂停时仍执行绝对截止时间；调用端自身的 Go 手工取消回调需要该进程恢复后才能运行，这遵循操作系统暂停语义。
+方向键选择语言，Enter 查询与选择版本，`/` 筛选，Esc 返回。确认保存、预览和同步后可进入运行；运行前恢复终端，结束后返回界面。TUI 需要真实交互式终端，脚本使用普通 CLI 与 `--json`。
 
-Linux 组件中的 clean --dry-run 会预览所有者已退出且全部准备子树完成证据有效的操作，统计候选及字节但不写状态；实际 clean 会持锁重新校验。未知或不完整回执继续保留。
+包管理抽屉目前属于 GUI，CLI/TUI 没有新增一套包管理命令。完整按键和流程见 [TUI 指南](https://xvshifu.github.io/myEnv/guide/tui/)。
 
-Windows 准备恢复使用已登记的命名 Job：原所有者退出且所有对应 Job 均确认消失后，clean 才解除准备保护。无法确认的记录继续保留。
+更多帮助：`myenv` 查看状态，`myenv help manual` 查看离线手册，`myenv help sync` 查看命令说明。中文系统默认中文，可通过 `--lang en` 切换。
+
+## 版本从哪里来
+
+| 工具 | 当前接入来源 | 常见选择 |
+| --- | --- | --- |
+| Python | 默认 Astral CPython；Windows 可显式选择 python.org 完整 x64 ZIP | `python@3.12` |
+| Node.js | Node.js 官方归档 | `node@22`，或完整版本 / 受支持范围 |
+| Java | Eclipse Temurin HotSpot JDK | `java@8`、`java@17`、`java@21`；Java 8 即常说的 JDK 1.8 |
+| Go | Go 官方归档 | 版本族或完整版本 |
+| Rust | Rust 官方完整工具链归档 | 稳定版本、`beta`、`nightly[-YYYY-MM-DD]` |
+
+示例不是版本上下限。可选范围取决于来源是否提供当前平台的制品；普通版本范围选择稳定版，预发布需要明确选择。查询和安装不承诺覆盖所有厂商、历史版本与变体。
+
+```sh
+myenv versions java --major 8
+myenv system install java@8
+myenv run --global java -version
+```
+
+Python 默认查询复用已有固定 uv 的 Astral 目录，不为查询自动安装 uv；Windows 可显式使用 `--provider python.org`。更多来源、平台和已验证样本见[支持范围](https://xvshifu.github.io/myEnv/guide/support/)。
+
+## 当前支持范围
+
+| 平台 | CLI / TUI | GUI |
+| --- | --- | --- |
+| Windows amd64 | 提供 | 提供，需要 WebView2 |
+| 原生 Linux amd64 / glibc | 提供 | 暂缓 |
+| WSL TUI、macOS、ARM64、musl | 不在本次支持范围 | 不提供 |
+
+rc.11 仍有性能预算、高 DPI、真实 IME、无 WebView2 干净机器，以及部分外部管理器写操作的验收缺口。已有功能验证不代表这些项目已通过；详见[当前记录](docs/implementation.md)和[性能缺口](docs/performance-gap.md)。
+
+## 参与开发
+
+CLI 使用 [go.mod](go.mod) 指定的 Go **1.26.6**；Windows GUI 还需 Node/npm 和 PowerShell 7。使用发行包无需自行安装 Go 或 Node。
+
+```sh
+go build -o dist/myenv ./cmd/myenv
+```
+
+Windows 输出名可改为 `dist/myenv.exe`。GUI 与发行包构建、依赖许可和源码证据见[构建说明](docs/build.md)；文档站单独维护于 [website/](website/README.md)。
+
+| 目录 | 内容 |
+| --- | --- |
+| `cmd/` | CLI 与独立 Windows GUI 入口 |
+| `internal/` | 共用内核、后端、终端界面与平台适配 |
+| [docs/](docs/README.md) | 当前架构、构建与验证状态；设计和历史记录分目录保留 |
+| `scripts/` | 构建、打包和受控验证脚本 |
+| `website/` | 中文文档站、使用指南与真实截图 |
+
+开发前阅读 [AGENTS.md](AGENTS.md)、[架构约定](docs/architecture.md)和[当前任务](docs/implementation.md)。缓存、临时验证和本地发行包不提交到 Git。
+
+项目自身许可证尚未选定。随制品分发的第三方组件保留各自许可，详情见[第三方声明](cmd/myenv-gui/build/THIRD_PARTY_NOTICES.txt)。

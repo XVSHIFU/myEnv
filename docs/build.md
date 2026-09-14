@@ -1,6 +1,10 @@
 # 构建开发制品
 
-使用 `go.mod` 指定的 Go 1.26.6。当前制品仍为开发版本；构建成功不代表平台、性能和发布验收已经完成，具体证据见 [implementation.md](implementation.md)。
+使用 `go.mod` 指定的 Go 1.26.6。当前本地候选为 `0.1.0-rc.11`，尚未公开发布；构建成功不代表平台、性能和发布验收已经完成，具体证据见 [implementation.md](implementation.md)。
+
+使用已构建的软件无需准备这些开发依赖。Windows 用户安装与首次操作见 [Windows 安装与入门](windows-install.md)，网站文档的本地构建见 [website/README.md](../website/README.md)。
+
+## 构建 CLI/TUI
 
 在 PowerShell 中运行：
 
@@ -8,27 +12,48 @@
 ./scripts/build-release.ps1
 ```
 
-默认构建 Windows amd64、Linux amd64、macOS arm64，输出到 `dist/release`。只构建本次需要的目标：
+默认构建 Windows amd64 与 Linux amd64 的 CLI/TUI，输出到 `dist/release`；脚本不提供 macOS 或 Linux GUI 目标。只构建本次需要的目标：
 
 ```powershell
 ./scripts/build-release.ps1 -Targets windows-amd64
 ```
 
-可用 `-Version 0.1.0-dev` 指定写入二进制的版本，用 `-OutputDirectory` 指定产物目录。脚本只构建和生成清单，不发布、安装或修改 PATH。所选目标全部成功后才写入本次清单；目录内其他已有文件不列入清单。
+可用 `-Version 0.1.0-rc.11` 指定写入二进制的版本，用 `-OutputDirectory` 指定产物目录。脚本只构建和生成清单，不发布、安装或修改 PATH。所选目标全部成功后才写入本次清单；目录内其他已有文件不列入清单。
+
+## 构建与打包 Windows GUI
+
+构建 Windows GUI 需要 Windows PowerShell 7、Node/npm 和锁定的前端依赖，`-GUI` 同时要求选择 Windows CLI 目标：
+
+```powershell
+./scripts/build-release.ps1 -Version 0.1.0-rc.11 -GUI
+./scripts/package-windows.ps1
+```
+
+脚本执行 `npm ci --ignore-scripts` 与前端构建，以 `gui,desktop,production` 标签构建 GUI，再注入原生图标；GUI 资源不进入 CLI。打包脚本使用 Windows .NET Framework 编译器，输出包含 GUI/CLI 的便携 ZIP、仅安装 CLI/TUI 的 setup 和分发包摘要。GUI 运行仍需 WebView2，便携包不捆绑离线运行时，当前制品未签名。
+
+默认构建目录为 `dist/release`，默认打包目录为 `dist/packages`；两处 `SHA256SUMS` 各自覆盖本次输出。准备公开候选时，最终清单须覆盖实际提供的二进制、ZIP、setup 和许可文件，并明确对应源码版本；不能用打包目录的两项摘要替代完整制品清单。
+
+## 制品、源码与校验
 
 固定构建参数为 `CGO_ENABLED=0`、`-trimpath`、`-buildvcs=false` 和 `-ldflags="-s -w -X main.version=<版本>"`。构建失败立即报错，结束时恢复脚本调用前的 GOOS、GOARCH 和 CGO_ENABLED。调试信息被移除，需要调试时使用普通 `go build` 另建调试制品。
 
 每次生成：
 
 - 所选目标的 `myenv-<目标>` 二进制，Windows 带 `.exe` 后缀。
-- `build-manifest.json`：版本、Go 编译器、参数、目标、文件大小和 SHA-256。
+- `build-manifest.json`：版本、Go 编译器、参数、目标、文件大小、SHA-256 和源码输入证据。
 - `SHA256SUMS`：本次所选制品的摘要清单。
 
+manifest 的 `source` 记录基准提交 `base_commit`、工作区是否有未提交改动 `working_tree_modified`，以及实际构建输入的逐文件摘要和总摘要 `input_sha256`。输入涵盖 `cmd`、`internal`、`scripts`、`go.mod`、`go.sum`，包含生成的前端嵌入资源，排除依赖缓存；构建前后输入变化会使构建失败。有未提交改动的候选不能仅凭基准提交复现，交付时还须提供对应源码快照及其摘要。
+
 校验清单只记录文件摘要，不是签名或来源认证。性能报告必须引用实际受测制品的摘要；不同构建不能直接沿用旧报告作为门禁通过证据。
+
+代码 CI 在 Windows/Linux 上运行已有离线接口、包目录和核心包管理定向测试；包管理的真实联网生命周期测试保持显式启用，不纳入日常 CI。Windows GUI CI 单独验证前端、生产标签构建和图标资源，不会创建 Release 或上传发行包。工作流通过与公开发布是独立步骤。
 
 所有选定目标先构建到输出目录下的独立 `.build-<随机ID>` 暂存目录，摘要和清单也先写入该目录。某个目标编译失败时保留此前正式产物，部分构建文件留在暂存目录供检查。重复目标只构建一次。
 
 全部编译和清单生成成功后，脚本逐文件替换所选制品，最后替换摘要清单和 manifest。这个步骤不是跨文件原子事务；复制失败、文件占用或进程中断可能留下不完整更新，应重新运行构建，并在脚本成功结束后核对清单中的全部摘要。不要在脚本运行过程中分发输出目录。
+
+## 记录性能样本
 
 Windows PowerShell 7 可用以下工具记录单个 CLI 进程的峰值工作集：
 

@@ -1,4 +1,4 @@
-目标范围：根据 myEnv-architecture-proposal.md，按 [architecture.md](architecture.md) 实现 CLI 首版 T00–T06。
+目标范围：根据[初始架构方案](../design/initial-architecture.md)，按 [architecture.md](../architecture.md) 实现 CLI 首版 T00–T06。
 当前状态：in_progress；T03–T05 的剩余完整性与平台验证、T06 性能/发布门禁均未关闭。日期：2026-09-08。
 
 本文件是当前接续摘要，不是验收通过声明。完整逐轮证据保留在 [implementation-history.md](implementation-history.md)，其中旧“未实现”、旧制品指标和运行中的进程句柄均是历史状态，不能直接作为当前事实。

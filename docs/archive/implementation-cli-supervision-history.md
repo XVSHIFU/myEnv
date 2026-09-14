@@ -1,4 +1,4 @@
-目标：按 [architecture.md](architecture.md) 实现 myEnv CLI 首版 T00–T06。状态：in_progress，2026-09-09。没有完成首版验收，不缩减目标。
+目标：按 [architecture.md](../architecture.md) 实现 myEnv CLI 首版 T00–T06。状态：in_progress，2026-09-09。没有完成首版验收，不缩减目标。
 
 最新制品提示：最近三目标构建为 .build/caller-wake-release，新增Linux截止取消、调用端恢复与严格确认；Windows/Darwin与prompt-errors-release字节一致，该Windows SHA已测混合无变更同步p95 78.2770ms通过200ms预算，status p95 57.0460ms及run开销p95 82.3604ms未通过50ms预算；20次run父进程最大峰值工作集12.2422MiB通过32MiB子项。启动通过PowerShell直接进程测得version/help p95为76.6930/82.1271ms，未通过30ms预算；冷缓存与完整内存矩阵仍未完成，Darwin原生验证未运行。较早 .build/active-read-release 的Windows状态查询p95 57.5821ms未达预算；更早 .build/mirrors-shell-release 的启动/run/状态延迟未达预算，混合无变更同步延迟通过。具体测量范围与原始报告见文末逐轮记录，不将旧制品或父进程内存子集拼为完整验收。
 

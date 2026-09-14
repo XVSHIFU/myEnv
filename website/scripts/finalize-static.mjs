@@ -15,7 +15,8 @@ for(const file of readdirSync(join(root,'guide'))){
 }
 writeFileSync(join(root,'.nojekyll'),'');
 let checked=0;
-for(const file of [join(root,'index.html'),...readdirSync(join(root,'guide')).filter(n=>n.endsWith('.html')).map(n=>join(root,'guide',n))]){
+const pages=[join(root,'index.html'),...readdirSync(join(root,'guide')).filter(n=>n.endsWith('.html')).map(n=>join(root,'guide',n))];
+for(const file of pages){
  let html=readFileSync(file,'utf8');
  if(prefix){html=html.replaceAll('href="/favicon.svg"',`href="${prefix}/favicon.svg"`);writeFileSync(file,html);}
  if(file!==join(root,'index.html'))copyFileSync(file,file.replace(/\.html$/,'/index.html'));
@@ -30,4 +31,4 @@ for(const file of [join(root,'index.html'),...readdirSync(join(root,'guide')).fi
   checked++;
  }
 }
-console.log(`Static docs ready: 11 pages; ${checked} internal asset/page references checked.`);
+console.log(`Static docs ready: ${pages.length} pages; ${checked} internal asset/page references checked.`);
