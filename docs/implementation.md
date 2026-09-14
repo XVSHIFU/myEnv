@@ -1,6 +1,6 @@
 # 当前状态与下一步
 
-更新：2026-09-14。当前为 `0.1.0-rc.11` 本地预发布候选；源码整理于 `codex/rc11-release`，产品提交 `6428c25`（远端基线 `a7a5742`），尚未推送或发布。保留 rc.10 及更早制品。GUI 包管理和语言下工具入口已完成；本次更新 README、文档站、真实截图与目录/Git 布局，没有重做运行时。现有候选的源码快照仍准确记录构建时未提交工作区，未回填为整理后的提交。
+更新：2026-09-14。`0.1.0-rc.11` 源码已通过 [PR #1](https://github.com/XVSHIFU/myEnv/pull/1) 合入 `main`（`651fd28`），Windows/Linux 核心 CI 与 Windows GUI 构建通过；[文档站](https://xvshifu.github.io/myEnv/)已部署。GUI 包管理、语言下工具入口、README、真实截图与目录/Git 整理已完成，合并前另修复 Python 路径别名核验。未创建软件标签或 Release；保留原 rc.11 及更早本地制品。现有本地候选未重建，不包含路径修复 `d9e1470`，源码快照仍记录其实际构建内容。
 
 ## 当前行为
 
@@ -41,13 +41,15 @@ node .build/rc11/check-shortcuts.cjs
 - Kali原生新包核心定向测试通过，日志 `.build/rc11/package-core/kali-targeted.log`。远端仅隔离/tmp目录、禁用联网；未执行Linux真实包安装。rc.10 Windows/Kali TUI交接与信号证据继续复用，WSL TUI原有门禁仍开放。
 - 工具入口最终原生确认：`.build/rc11/gui-shortcuts.ps1 -ShotsOnly` 的 `screen-runs/20260914-160424-679-f1404921` 共8张浅深色/普通最小窗口截图，实际本机检查和pip/uv/npm路径、更多导航、关闭与跨尺寸焦点恢复通过；未执行用户包写操作。前一轮最后截图采集失去原生窗口，不能算整轮通过；最终确认完整结束。独立设计审核 ship / faithful。`shortcut-identity-check.json` 使用标明的fixture验证项目pip隔离、同名不同路径保留、未知/损坏工具排除；多位置选择未声称本机实际存在多个uv。
 - Windows GUI/CLI、Linux CLI最终发布构建通过；两种CLI哈希与原rc.11一致，复用既有运行时证据。`.build/rc11/check-shortcuts-assets.py` 核对4个当前前端资源在生产GUI中、未进入CLI。真正生产GUI隔离APPDATA启动与正常退出0在 `shortcuts-production-smoke/result.json`。
-- 发布准备：`shortcuts-package-check.json` 核对8项SHA256、5个zip/portable文件、源码快照和setup内嵌许可。完整第三方许可由缓存离线生成，47个Go生产模块、83份上游原文，两次生成哈希一致；保留图标声明。两份CI YAML结构检查通过，远端CI尚未运行。GUI仍需要WebView2，setup仅CLI/TUI，未签名。
+- 发布准备：`shortcuts-package-check.json` 核对8项SHA256、5个zip/portable文件、源码快照和setup内嵌许可。完整第三方许可由缓存离线生成，47个Go生产模块、83份上游原文，两次生成哈希一致；保留图标声明。两份CI YAML结构检查通过。GUI仍需要WebView2，setup仅CLI/TUI，未签名。
 - 公开文档：README重新组织介绍、下载、GUI/TUI/CLI入门和支持边界；网站新增GUI、包管理、TUI三篇指南。3张原生rc.11截图仅使用隔离示例项目与真实官方查询/安装预览，无安装执行；来源摘要在 `.build/rc11/docs-captures.json`。`NEXT_PUBLIC_BASE_PATH=/myEnv npm run build`（website）通过14页/403内部引用；1280px/390px无横向溢出，图片加载正常。仓库Markdown相对链接与原文许可Git字节核对通过，本次未重测运行时/性能。
 - 目录与Git：21个既有文件按用途迁移并逐项核对迁移前后摘要；设计/原型在 `docs/design`，历史在 `docs/archive`，旧patch仅本地归档。`.build`、dist和有效缓存保留；安装在仓库内的Impeccable工具副本通过本地Git排除保留原位，项目DESIGN和surface契约随源码提交。仓库换行规则明确，第三方原文与摘要文件保留字节。
+- 合并检查：Windows CI 首次暴露 Python 短路径与规范路径误判。修复仅规范化探测的根目录/包路径，保留解释器入口与 `-I -S`；本机 `go test ./internal/core -run '^TestPackageManagePythonPreview' -count=1 -v` 通过 junction、真实8.3短路径、不同环境拒绝和启动钩子隔离，启用 `MYENV_TEST_INVENTORY_PYTHON=1` 的 `go test ./internal/core -run '^TestInventory(Python|Metadata|Probe)' -count=1 -v` 通过7项相关测试。最终 `d9e1470` 的 [Windows/Ubuntu Go interface checks](https://github.com/XVSHIFU/myEnv/actions/runs/34825282146) 与 [Windows GUI build](https://github.com/XVSHIFU/myEnv/actions/runs/34825282136) 全部通过；Windows CI Python为3.12.10。本轮未执行真实用户包写操作。
+- 文档部署：合并提交 `651fd28` 的 [GitHub Pages 工作流](https://github.com/XVSHIFU/myEnv/actions/runs/34825512732)通过 `npm ci --ignore-scripts`、`npm run build` 和部署；远端构建核对14页/403内部引用。`.build/rc11/verify-public-pages.ps1` 在线核对6个主要页面HTTP 200及正文，3张rc.11截图SHA256与源码一致；结果在 `public-pages-check.json`。此后的部署状态记录仅更新仓库文档，不改变网站产物。
 
 ## 仍开放与下一步
 
 - Linux GUI按用户允许暂缓；本轮没有承诺Linux包写操作原生闭环。WSL TUI门禁仍未改。
 - 性能预算不降低：GUI可交互≤2s、空闲单核CPU≤1%；上次2.703s、Windows TUI空闲CPU3.53%仍未达标，本轮未重测或宣称修复。其余预算和CLI缺口见 architecture.md / performance-gap.md。
 - 高DPI、真实IME、无WebView2干净机器、真实外部升级/修复仍未验收。管理器自身更新/版本切换/卸载的真实写验收，以及安装脚本必需包，仍需独立受控样本。
-- Node解压运行时共享池、更多生态/私有包仓库、Python受管声明编辑器不在本轮。下一步推送准备好的分支并运行代码/GUI CI；实际公开Release前从选定提交重新构建并核对源码/制品，再关联标签，文档站另行部署。项目自身LICENSE尚未由作者选择，本次只补齐第三方许可。性能缺口继续按原预算处理，不因准备预发布而降标。
+- Node解压运行时共享池、更多生态/私有包仓库、Python受管声明编辑器不在本轮。源码合并与文档部署已完成；实际公开Release前从选定提交重新构建并核对源码/制品，再关联标签，不能直接将旧本地候选标为包含合并修复。项目自身LICENSE尚未由作者选择，本次只补齐第三方许可。性能缺口继续按原预算处理，不因准备预发布而降标。
